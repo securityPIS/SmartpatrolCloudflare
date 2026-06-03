@@ -1,0 +1,12 @@
+import { drizzle } from "drizzle-orm/d1";
+import * as schema from "./schema";
+
+export * from "./schema";
+export { schema };
+
+/** Create a Drizzle client bound to a D1 database (from the Worker `env.DB`). */
+export function createDb(d1: D1Database) {
+  return drizzle(d1, { schema });
+}
+
+export type Database = ReturnType<typeof createDb>;
