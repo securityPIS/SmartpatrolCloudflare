@@ -14,7 +14,7 @@ APP_ENV = "development"
 [[d1_databases]]
 binding = "DB"
 database_name = "smartpatrol"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
+database_id = "ffee3bfd-887f-4a91-b385-31628a10e2d7"
 migrations_dir = "../../packages/db/migrations"
 
 # --- R2 media bucket (Phase 6) ---
