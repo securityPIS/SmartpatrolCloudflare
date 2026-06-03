@@ -1,11 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ForbiddenError } from "../../../domain/errors";
-import {
-  buildTestDeps,
-  InMemoryPendingRepository,
-  InMemoryProfileRepository,
-  seedProfile,
-} from "../../auth/__tests__/fakes";
+import { buildTestDeps, InMemoryPendingRepository } from "../../auth/__tests__/fakes";
 import { createAdminUseCases } from "../index";
 import type { Actor } from "../../../domain/authz";
 

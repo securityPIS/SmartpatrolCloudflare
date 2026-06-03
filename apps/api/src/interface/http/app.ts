@@ -11,6 +11,7 @@ import { health } from "./routes/health";
 import { shipsRouter } from "./routes/ships";
 import { usersRouter } from "./routes/users";
 import { adminRouter } from "./routes/admin";
+import { patrolRouter } from "./routes/patrol";
 
 /** Factory for the container, overridable in tests. */
 export type ContainerFactory = (env: Env) => Container;
@@ -34,6 +35,7 @@ export function createApp(getContainer: ContainerFactory = createContainer) {
   app.route("/ships", shipsRouter);
   app.route("/users", usersRouter);
   app.route("/admin", adminRouter);
+  app.route("/patrol", patrolRouter);
 
   app.notFound((c) => {
     const error: ApiError = { code: "NOT_FOUND", message: "Route not found" };

@@ -48,3 +48,14 @@ export class ForbiddenError extends DomainError {
     super("FORBIDDEN", message, 403);
   }
 }
+
+/**
+ * Anti-resurrection guard: a stale report (captured at or before a deletion)
+ * tried to re-upsert onto a tombstoned natural key. Blocked so deleted visits
+ * cannot be revived by late offline replays.
+ */
+export class StalePatrolReportError extends DomainError {
+  constructor(message = "This report predates a deletion and was rejected") {
+    super("PATROL_STALE_REPORT", message, 409);
+  }
+}

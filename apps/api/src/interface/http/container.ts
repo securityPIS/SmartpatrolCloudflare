@@ -3,6 +3,7 @@ import { createAuthUseCases, type AuthConfig, type AuthUseCases } from "../../ap
 import { createAdminUseCases, type AdminUseCases } from "../../application/admin";
 import { createShipUseCases, type ShipUseCases } from "../../application/ships";
 import { createUserUseCases, type UserUseCases } from "../../application/users";
+import { createPatrolUseCases, type PatrolUseCases } from "../../application/patrol";
 import type { TokenService } from "../../application/ports/TokenService";
 import { JoseTokenService } from "../../infrastructure/crypto/joseTokenService";
 import { ScryptPasswordHasher } from "../../infrastructure/crypto/scryptPasswordHasher";
@@ -10,6 +11,7 @@ import { DrizzleProfileRepository } from "../../infrastructure/db/drizzleProfile
 import { DrizzleSessionRepository } from "../../infrastructure/db/drizzleSessionRepository";
 import { DrizzlePendingRegistrationRepository } from "../../infrastructure/db/drizzlePendingRegistrationRepository";
 import { DrizzleShipRepository } from "../../infrastructure/db/drizzleShipRepository";
+import { DrizzlePatrolReportRepository } from "../../infrastructure/db/drizzlePatrolReportRepository";
 import { NoopEmailGateway } from "../../infrastructure/email/noopEmailGateway";
 import { ResendEmailGateway } from "../../infrastructure/email/resendEmailGateway";
 import { systemClock } from "../../infrastructure/system/systemClock";
@@ -26,6 +28,7 @@ export interface Container {
   ships: ShipUseCases;
   users: UserUseCases;
   admin: AdminUseCases;
+  patrol: PatrolUseCases;
 }
 
 export function createContainer(env: Env): Container {
@@ -63,6 +66,12 @@ export function createContainer(env: Env): Container {
 
   const ships = createShipUseCases({ ships: shipRepo, clock: systemClock, ids: uuidGenerator });
   const users = createUserUseCases({ profiles: profileRepo, clock: systemClock });
+  const patrol = createPatrolUseCases({
+    patrols: new DrizzlePatrolReportRepository(db),
+    ships: shipRepo,
+    clock: systemClock,
+    ids: uuidGenerator,
+  });
   const admin = createAdminUseCases({
     profiles: profileRepo,
     pending: pendingRepo,
@@ -73,5 +82,5 @@ export function createContainer(env: Env): Container {
     config: { appUrl, emailFrom },
   });
 
-  return { tokens, auth, ships, users, admin };
+  return { tokens, auth, ships, users, admin, patrol };
 }

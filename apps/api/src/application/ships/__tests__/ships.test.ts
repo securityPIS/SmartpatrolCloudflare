@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach } from "vitest";
 import { ForbiddenError } from "../../../domain/errors";
-import { buildTestDeps, MutableClock, SequentialIds } from "../../auth/__tests__/fakes";
+import { MutableClock, SequentialIds } from "../../auth/__tests__/fakes";
 import { createShipUseCases } from "../index";
 import { InMemoryShipRepository } from "./fakes";
 import type { Actor } from "../../../domain/authz";
