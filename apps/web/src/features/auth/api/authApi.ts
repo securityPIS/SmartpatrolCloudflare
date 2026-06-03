@@ -10,8 +10,7 @@ import type {
 import { apiRequest } from "../../../shared/api/client";
 
 export const authApi = {
-  login: (body: LoginRequest) =>
-    apiRequest<AuthResponse>("/auth/login", { method: "POST", body }),
+  login: (body: LoginRequest) => apiRequest<AuthResponse>("/auth/login", { method: "POST", body }),
 
   register: (body: RegisterRequest) =>
     apiRequest<RegisterResponse>("/auth/register", { method: "POST", body }),

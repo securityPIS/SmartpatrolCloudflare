@@ -1,4 +1,5 @@
 import type { JwtPayload } from "@smartpatrol/contracts";
+import type { Actor } from "../../domain/authz";
 import type { Container } from "./container";
 
 /**
@@ -33,5 +34,7 @@ export interface HonoEnv {
     /** Populated by the auth middleware. */
     userId?: string;
     claims?: JwtPayload;
+    /** Authenticated principal for authorization checks (set by requireAuth). */
+    actor?: Actor;
   };
 }

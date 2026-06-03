@@ -123,9 +123,9 @@ yang paralel.
 - [ ] 1.8 Web: reimplement **offline-auth guard** (auth-null involunter = transient; logout hanya eksplisit) — port prinsip dari SYSTEM_MAP lama
 
 ### Phase 2 — Authorization (pengganti RLS)
-- [ ] 2.1 Modul policy: role (ADMIN/PIC/PETUGAS) + `canAccessShip(user, shipName)`
-- [ ] 2.2 Terapkan policy di tiap use-case
-- [ ] 2.3 **Matriks test policy** meniru RLS lama (admin full; PIC/PETUGAS hanya kapal ditugaskan; pending owner/admin; storage scope)
+- [x] 2.1 Modul policy: role (ADMIN/PIC/PETUGAS) + `canAccessShip(actor, shipId)` (`domain/authz/`)
+- [x] 2.2 Helper terapkan policy: `assert*` (domain) + `requireRole` middleware (HTTP); diterapkan per use-case saat fitur dibangun (Phase 3+)
+- [x] 2.3 **Matriks test policy** meniru RLS lama (admin full; PIC/PETUGAS hanya kapal ditugaskan; pending owner/admin; storage scope)
 
 ### Phase 3 — Ships, Users, Profiles (admin)
 - [ ] 3.1 Repo+use-case+route `ships` (incl. `custom_checkpoints` JSON)

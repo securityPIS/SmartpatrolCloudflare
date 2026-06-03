@@ -42,3 +42,9 @@ export class NotFoundError extends DomainError {
     super("NOT_FOUND", message, 404);
   }
 }
+
+export class ForbiddenError extends DomainError {
+  constructor(message = "You do not have permission to perform this action") {
+    super("FORBIDDEN", message, 403);
+  }
+}

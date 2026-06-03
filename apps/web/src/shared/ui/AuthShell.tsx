@@ -1,6 +1,10 @@
 import type { ReactNode } from "react";
 
-export function AuthShell({ title, subtitle, children }: {
+export function AuthShell({
+  title,
+  subtitle,
+  children,
+}: {
   title: string;
   subtitle?: string;
   children: ReactNode;
