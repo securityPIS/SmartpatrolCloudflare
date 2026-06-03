@@ -10,6 +10,7 @@ import { ShipListPage } from "../features/ship/ui/ShipListPage";
 import { UserListPage } from "../features/user/ui/UserListPage";
 import { PendingRegistrationsPage } from "../features/user/ui/PendingRegistrationsPage";
 import { AdminLayout } from "../shared/ui/AdminLayout";
+import { IncidentListPage } from "../features/incident/ui/IncidentListPage";
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const status = useAuthStore((s) => s.status);
@@ -70,6 +71,14 @@ export function AppRouter() {
           element={
             <ProtectedRoute>
               <PatrolPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/incidents/:shipId"
+          element={
+            <ProtectedRoute>
+              <IncidentListPage />
             </ProtectedRoute>
           }
         />

@@ -4,6 +4,8 @@ import { createAdminUseCases, type AdminUseCases } from "../../application/admin
 import { createShipUseCases, type ShipUseCases } from "../../application/ships";
 import { createUserUseCases, type UserUseCases } from "../../application/users";
 import { createPatrolUseCases, type PatrolUseCases } from "../../application/patrol";
+import { createIncidentUseCases, type IncidentUseCases } from "../../application/incidents";
+import { createSosUseCases, type SosUseCases } from "../../application/sos";
 import type { TokenService } from "../../application/ports/TokenService";
 import { JoseTokenService } from "../../infrastructure/crypto/joseTokenService";
 import { ScryptPasswordHasher } from "../../infrastructure/crypto/scryptPasswordHasher";
@@ -12,6 +14,8 @@ import { DrizzleSessionRepository } from "../../infrastructure/db/drizzleSession
 import { DrizzlePendingRegistrationRepository } from "../../infrastructure/db/drizzlePendingRegistrationRepository";
 import { DrizzleShipRepository } from "../../infrastructure/db/drizzleShipRepository";
 import { DrizzlePatrolReportRepository } from "../../infrastructure/db/drizzlePatrolReportRepository";
+import { DrizzleIncidentRepository } from "../../infrastructure/db/drizzleIncidentRepository";
+import { DrizzleSosRepository } from "../../infrastructure/db/drizzleSosRepository";
 import { NoopEmailGateway } from "../../infrastructure/email/noopEmailGateway";
 import { ResendEmailGateway } from "../../infrastructure/email/resendEmailGateway";
 import { systemClock } from "../../infrastructure/system/systemClock";
@@ -29,6 +33,8 @@ export interface Container {
   users: UserUseCases;
   admin: AdminUseCases;
   patrol: PatrolUseCases;
+  incidents: IncidentUseCases;
+  sos: SosUseCases;
 }
 
 export function createContainer(env: Env): Container {
@@ -82,5 +88,17 @@ export function createContainer(env: Env): Container {
     config: { appUrl, emailFrom },
   });
 
-  return { tokens, auth, ships, users, admin, patrol };
+  const incidents = createIncidentUseCases({
+    incidents: new DrizzleIncidentRepository(db),
+    clock: systemClock,
+    ids: uuidGenerator,
+  });
+
+  const sos = createSosUseCases({
+    sos: new DrizzleSosRepository(db),
+    clock: systemClock,
+    ids: uuidGenerator,
+  });
+
+  return { tokens, auth, ships, users, admin, patrol, incidents, sos };
 }

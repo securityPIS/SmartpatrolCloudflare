@@ -20,7 +20,7 @@ export function CreateIncidentModal({ shipId, onClose }: CreateIncidentModalProp
     setSubmitting(true);
     setError(null);
     try {
-      await create({ shipId, title, description: description || undefined, severity });
+      await create({ shipId, title, description: description || undefined, severity, payload: {} });
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create incident");

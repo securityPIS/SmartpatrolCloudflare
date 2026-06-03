@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { useAuthStore } from "../../auth/model/authStore";
 import { useShipStore } from "../../ship/model/shipStore";
 import { useServerTimeStore } from "../model/serverTimeStore";
+import { SosButton } from "../../sos/ui/SosButton";
+import { SosAlertsBanner } from "../../sos/ui/SosAlertsBanner";
 
 export function DashboardPage() {
   const { status: timeStatus, serverNow, iso, error, refresh } = useServerTimeStore();
@@ -72,6 +74,8 @@ export function DashboardPage() {
           Refresh server time
         </button>
 
+        <SosAlertsBanner />
+
         <div className="mt-6">
           <p className="mb-2 text-xs uppercase tracking-wide text-slate-400">Start patrol</p>
           {ships.length === 0 ? (
@@ -79,14 +83,27 @@ export function DashboardPage() {
           ) : (
             <div className="space-y-2">
               {ships.map((ship) => (
-                <Link
+                <div
                   key={ship.id}
-                  to={`/patrol/${ship.id}`}
-                  className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-brand-300 hover:bg-slate-50"
+                  className="rounded-xl border border-slate-200 px-4 py-3"
                 >
-                  <span>{ship.name}</span>
-                  <span className="text-brand-600">Patrol →</span>
-                </Link>
+                  <p className="mb-2 text-sm font-medium text-slate-800">{ship.name}</p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Link
+                      to={`/patrol/${ship.id}`}
+                      className="rounded-lg border border-brand-200 px-3 py-1.5 text-xs font-medium text-brand-600 transition hover:bg-brand-50"
+                    >
+                      Patrol →
+                    </Link>
+                    <Link
+                      to={`/incidents/${ship.id}`}
+                      className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-50"
+                    >
+                      Incidents
+                    </Link>
+                    <SosButton shipId={ship.id} />
+                  </div>
+                </div>
               ))}
             </div>
           )}
