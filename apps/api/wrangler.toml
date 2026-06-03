@@ -27,7 +27,7 @@ bucket_name = "smartpatrol-media"
 # Create with: wrangler kv namespace create KV  → paste the id below.
 [[kv_namespaces]]
 binding = "KV"
-id = "REPLACE_WITH_KV_NAMESPACE_ID"
+id = "2ba7353c06bf4e0c9c89a680960bc2d7"
 
 # --- Durable Objects: realtime ShipChannel (Phase 7) ---
 [[durable_objects.bindings]]
