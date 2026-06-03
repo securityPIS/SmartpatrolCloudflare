@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { profiles, type Database } from "@smartpatrol/db";
 import type {
   NewProfile,
+  ProfilePatch,
   ProfileRecord,
   ProfileRepository,
 } from "../../application/ports/ProfileRepository";
@@ -19,7 +20,15 @@ export class DrizzleProfileRepository implements ProfileRepository {
     return rows[0] ?? null;
   }
 
+  async findAll(): Promise<ProfileRecord[]> {
+    return this.db.select().from(profiles);
+  }
+
   async create(profile: NewProfile): Promise<void> {
     await this.db.insert(profiles).values(profile);
+  }
+
+  async update(id: string, patch: ProfilePatch): Promise<void> {
+    await this.db.update(profiles).set(patch).where(eq(profiles.id, id));
   }
 }

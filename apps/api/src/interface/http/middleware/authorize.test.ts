@@ -9,7 +9,7 @@ import { getActor, requireRole } from "./authorize";
 /** Minimal app exposing an ADMIN-only route to exercise the guards end-to-end. */
 function buildApp() {
   const deps = buildTestDeps();
-  const container: Container = { tokens: deps.tokens, auth: {} as Container["auth"] };
+  const container = { tokens: deps.tokens } as unknown as Container;
 
   const app = new Hono<HonoEnv>();
   app.use("*", async (c, next) => {

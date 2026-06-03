@@ -5,6 +5,10 @@ import { RegisterPage } from "../features/auth/ui/RegisterPage";
 import { VerifyEmailPage } from "../features/auth/ui/VerifyEmailPage";
 import { useAuthStore } from "../features/auth/model/authStore";
 import { DashboardPage } from "../features/dashboard/ui/DashboardPage";
+import { ShipListPage } from "../features/ship/ui/ShipListPage";
+import { UserListPage } from "../features/user/ui/UserListPage";
+import { PendingRegistrationsPage } from "../features/user/ui/PendingRegistrationsPage";
+import { AdminLayout } from "../shared/ui/AdminLayout";
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const status = useAuthStore((s) => s.status);
@@ -13,12 +17,27 @@ function ProtectedRoute({ children }: { children: ReactNode }) {
   if (status === "unknown") {
     return <p className="flex min-h-screen items-center justify-center text-slate-500">Loading…</p>;
   }
-
   if (status === "unauthenticated") {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
-
   return <>{children}</>;
+}
+
+function AdminRoute({ children }: { children: ReactNode }) {
+  const user = useAuthStore((s) => s.user);
+  const status = useAuthStore((s) => s.status);
+  const location = useLocation();
+
+  if (status === "unknown") {
+    return <p className="flex min-h-screen items-center justify-center text-slate-500">Loading…</p>;
+  }
+  if (status === "unauthenticated") {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  if (user && user.role !== "ADMIN") {
+    return <Navigate to="/" replace />;
+  }
+  return <AdminLayout>{children}</AdminLayout>;
 }
 
 export function AppRouter() {
@@ -31,9 +50,12 @@ export function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Public */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
+
+        {/* Authenticated */}
         <Route
           path="/"
           element={
@@ -42,6 +64,33 @@ export function AppRouter() {
             </ProtectedRoute>
           }
         />
+
+        {/* Admin-only */}
+        <Route
+          path="/ships"
+          element={
+            <AdminRoute>
+              <ShipListPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <AdminRoute>
+              <UserListPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/registrations"
+          element={
+            <AdminRoute>
+              <PendingRegistrationsPage />
+            </AdminRoute>
+          }
+        />
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

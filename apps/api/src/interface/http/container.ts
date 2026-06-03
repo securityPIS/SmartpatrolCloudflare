@@ -1,11 +1,15 @@
 import { createDb } from "@smartpatrol/db";
 import { createAuthUseCases, type AuthConfig, type AuthUseCases } from "../../application/auth";
+import { createAdminUseCases, type AdminUseCases } from "../../application/admin";
+import { createShipUseCases, type ShipUseCases } from "../../application/ships";
+import { createUserUseCases, type UserUseCases } from "../../application/users";
 import type { TokenService } from "../../application/ports/TokenService";
 import { JoseTokenService } from "../../infrastructure/crypto/joseTokenService";
 import { ScryptPasswordHasher } from "../../infrastructure/crypto/scryptPasswordHasher";
 import { DrizzleProfileRepository } from "../../infrastructure/db/drizzleProfileRepository";
 import { DrizzleSessionRepository } from "../../infrastructure/db/drizzleSessionRepository";
 import { DrizzlePendingRegistrationRepository } from "../../infrastructure/db/drizzlePendingRegistrationRepository";
+import { DrizzleShipRepository } from "../../infrastructure/db/drizzleShipRepository";
 import { NoopEmailGateway } from "../../infrastructure/email/noopEmailGateway";
 import { ResendEmailGateway } from "../../infrastructure/email/resendEmailGateway";
 import { systemClock } from "../../infrastructure/system/systemClock";
@@ -19,6 +23,9 @@ const REFRESH_TTL_SEC = 30 * 24 * 60 * 60; // 30 days
 export interface Container {
   tokens: TokenService;
   auth: AuthUseCases;
+  ships: ShipUseCases;
+  users: UserUseCases;
+  admin: AdminUseCases;
 }
 
 export function createContainer(env: Env): Container {
@@ -31,16 +38,21 @@ export function createContainer(env: Env): Container {
     ? new ResendEmailGateway(env.RESEND_API_KEY, emailFrom)
     : new NoopEmailGateway();
 
+  const appUrl = env.APP_URL ?? "http://localhost:5173";
   const config: AuthConfig = {
-    appUrl: env.APP_URL ?? "http://localhost:5173",
+    appUrl,
     emailFrom,
     refreshTtlSec: REFRESH_TTL_SEC,
   };
 
+  const profileRepo = new DrizzleProfileRepository(db);
+  const pendingRepo = new DrizzlePendingRegistrationRepository(db);
+  const shipRepo = new DrizzleShipRepository(db);
+
   const auth = createAuthUseCases({
-    profiles: new DrizzleProfileRepository(db),
+    profiles: profileRepo,
     sessions: new DrizzleSessionRepository(db),
-    pending: new DrizzlePendingRegistrationRepository(db),
+    pending: pendingRepo,
     hasher: new ScryptPasswordHasher(),
     tokens,
     email,
@@ -49,5 +61,17 @@ export function createContainer(env: Env): Container {
     config,
   });
 
-  return { tokens, auth };
+  const ships = createShipUseCases({ ships: shipRepo, clock: systemClock, ids: uuidGenerator });
+  const users = createUserUseCases({ profiles: profileRepo, clock: systemClock });
+  const admin = createAdminUseCases({
+    profiles: profileRepo,
+    pending: pendingRepo,
+    hasher: new ScryptPasswordHasher(),
+    email,
+    clock: systemClock,
+    ids: uuidGenerator,
+    config: { appUrl, emailFrom },
+  });
+
+  return { tokens, auth, ships, users, admin };
 }

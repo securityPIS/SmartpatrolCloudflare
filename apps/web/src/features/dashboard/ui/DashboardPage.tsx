@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { Link } from "react-router-dom";
 import { useAuthStore } from "../../auth/model/authStore";
 import { useServerTimeStore } from "../model/serverTimeStore";
 
@@ -66,6 +67,24 @@ export function DashboardPage() {
         >
           Refresh server time
         </button>
+
+        {user?.role === "ADMIN" && (
+          <div className="mt-4 grid grid-cols-3 gap-2">
+            {[
+              { to: "/ships", label: "Ships" },
+              { to: "/admin/users", label: "Users" },
+              { to: "/admin/registrations", label: "Registrations" },
+            ].map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className="rounded-xl border border-slate-200 px-3 py-2.5 text-center text-sm font-medium text-slate-600 transition hover:bg-slate-50"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
     </main>
   );

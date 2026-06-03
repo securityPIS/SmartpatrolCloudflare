@@ -1,8 +1,14 @@
+import type { PendingRegistrationStatus } from "@smartpatrol/contracts";
 import type { Clock } from "../../ports/Clock";
 import type { IdGenerator } from "../../ports/IdGenerator";
 import type { PasswordHasher } from "../../ports/PasswordHasher";
 import type { EmailGateway, EmailMessage } from "../../ports/EmailGateway";
-import type { NewProfile, ProfileRecord, ProfileRepository } from "../../ports/ProfileRepository";
+import type {
+  NewProfile,
+  ProfilePatch,
+  ProfileRecord,
+  ProfileRepository,
+} from "../../ports/ProfileRepository";
 import type { NewSession, SessionRecord, SessionRepository } from "../../ports/SessionRepository";
 import type {
   NewPendingRegistration,
@@ -15,6 +21,9 @@ import type { AuthDeps } from "../deps";
 export class InMemoryProfileRepository implements ProfileRepository {
   readonly rows = new Map<string, ProfileRecord>();
 
+  async findAll(): Promise<ProfileRecord[]> {
+    return Array.from(this.rows.values());
+  }
   async findByEmail(email: string): Promise<ProfileRecord | null> {
     for (const p of this.rows.values()) if (p.email === email) return p;
     return null;
@@ -24,6 +33,10 @@ export class InMemoryProfileRepository implements ProfileRepository {
   }
   async create(profile: NewProfile): Promise<void> {
     this.rows.set(profile.id, profile);
+  }
+  async update(id: string, patch: ProfilePatch): Promise<void> {
+    const p = this.rows.get(id);
+    if (p) this.rows.set(id, { ...p, ...patch });
   }
 }
 
@@ -49,6 +62,10 @@ export class InMemorySessionRepository implements SessionRepository {
 export class InMemoryPendingRepository implements PendingRegistrationRepository {
   readonly rows = new Map<string, PendingRegistrationRecord>();
 
+  async findAll(status?: PendingRegistrationStatus): Promise<PendingRegistrationRecord[]> {
+    const all = Array.from(this.rows.values());
+    return status ? all.filter((r) => r.status === status) : all;
+  }
   async findByEmail(email: string): Promise<PendingRegistrationRecord | null> {
     for (const p of this.rows.values()) if (p.email === email) return p;
     return null;
@@ -62,6 +79,14 @@ export class InMemoryPendingRepository implements PendingRegistrationRepository 
   async markEmailVerified(id: string, verifiedAt: number): Promise<void> {
     const p = this.rows.get(id);
     if (p) this.rows.set(id, { ...p, emailVerifiedAt: verifiedAt, updatedAt: verifiedAt });
+  }
+  async updateStatus(
+    id: string,
+    status: PendingRegistrationStatus,
+    updatedAt: number,
+  ): Promise<void> {
+    const p = this.rows.get(id);
+    if (p) this.rows.set(id, { ...p, status, updatedAt });
   }
 }
 

@@ -8,6 +8,9 @@ import { type Container, createContainer } from "./container";
 import type { Env, HonoEnv } from "./env";
 import { auth } from "./routes/auth";
 import { health } from "./routes/health";
+import { shipsRouter } from "./routes/ships";
+import { usersRouter } from "./routes/users";
+import { adminRouter } from "./routes/admin";
 
 /** Factory for the container, overridable in tests. */
 export type ContainerFactory = (env: Env) => Container;
@@ -28,6 +31,9 @@ export function createApp(getContainer: ContainerFactory = createContainer) {
 
   app.route("/", health);
   app.route("/auth", auth);
+  app.route("/ships", shipsRouter);
+  app.route("/users", usersRouter);
+  app.route("/admin", adminRouter);
 
   app.notFound((c) => {
     const error: ApiError = { code: "NOT_FOUND", message: "Route not found" };

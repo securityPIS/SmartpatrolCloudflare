@@ -9,7 +9,10 @@ import { createApp } from "../app";
 import type { Container } from "../container";
 
 function appWith(deps: TestDeps) {
-  const container: Container = { tokens: deps.tokens, auth: createAuthUseCases(deps) };
+  const container = {
+    tokens: deps.tokens,
+    auth: createAuthUseCases(deps),
+  } as unknown as Container;
   return createApp(() => container);
 }
 

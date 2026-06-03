@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { pendingRegistrations, type Database } from "@smartpatrol/db";
+import type { PendingRegistrationStatus } from "@smartpatrol/contracts";
 import type {
   NewPendingRegistration,
   PendingRegistrationRecord,
@@ -31,10 +32,27 @@ export class DrizzlePendingRegistrationRepository implements PendingRegistration
     await this.db.insert(pendingRegistrations).values(pending);
   }
 
+  async findAll(status?: PendingRegistrationStatus): Promise<PendingRegistrationRecord[]> {
+    const q = this.db.select().from(pendingRegistrations);
+    if (status) return q.where(eq(pendingRegistrations.status, status));
+    return q;
+  }
+
   async markEmailVerified(id: string, verifiedAt: number): Promise<void> {
     await this.db
       .update(pendingRegistrations)
       .set({ emailVerifiedAt: verifiedAt, updatedAt: verifiedAt })
+      .where(eq(pendingRegistrations.id, id));
+  }
+
+  async updateStatus(
+    id: string,
+    status: PendingRegistrationStatus,
+    updatedAt: number,
+  ): Promise<void> {
+    await this.db
+      .update(pendingRegistrations)
+      .set({ status, updatedAt })
       .where(eq(pendingRegistrations.id, id));
   }
 }
