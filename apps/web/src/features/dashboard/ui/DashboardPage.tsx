@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuthStore } from "../../auth/model/authStore";
+import { useShipStore } from "../../ship/model/shipStore";
 import { useServerTimeStore } from "../model/serverTimeStore";
 
 export function DashboardPage() {
@@ -8,10 +9,13 @@ export function DashboardPage() {
   const user = useAuthStore((s) => s.user);
   const authStatus = useAuthStore((s) => s.status);
   const logout = useAuthStore((s) => s.logout);
+  const ships = useShipStore((s) => s.ships);
+  const loadShips = useShipStore((s) => s.load);
 
   useEffect(() => {
     void refresh();
-  }, [refresh]);
+    void loadShips();
+  }, [refresh, loadShips]);
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50 p-6 text-slate-900">
@@ -67,6 +71,26 @@ export function DashboardPage() {
         >
           Refresh server time
         </button>
+
+        <div className="mt-6">
+          <p className="mb-2 text-xs uppercase tracking-wide text-slate-400">Start patrol</p>
+          {ships.length === 0 ? (
+            <p className="text-sm text-slate-400">No ships assigned.</p>
+          ) : (
+            <div className="space-y-2">
+              {ships.map((ship) => (
+                <Link
+                  key={ship.id}
+                  to={`/patrol/${ship.id}`}
+                  className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-brand-300 hover:bg-slate-50"
+                >
+                  <span>{ship.name}</span>
+                  <span className="text-brand-600">Patrol →</span>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
 
         {user?.role === "ADMIN" && (
           <div className="mt-4 grid grid-cols-3 gap-2">

@@ -134,12 +134,12 @@ yang paralel.
 - [ ] 3.4 Web slice `ship` + `user` (store + ui)
 
 ### Phase 4 — Patrol reports & checkpoints (jantung app)
-- [ ] 4.1 Repo+use-case `savePatrolReport` upsert natural key (`shift_key,ship_id,checkpoint_id`)
-- [ ] 4.2 Tombstone anti-resurrection sebagai use-case (blok HANYA re-upsert basi: `completed_at <= deleted_at`) + test (port pelajaran SYSTEM_MAP)
-- [ ] 4.3 `finalize_shift` dari `custom_checkpoints` (match-by-name ternormalisasi, fallback id runtime) → cron Phase 8
-- [ ] 4.4 Web slice `patrol`: store + checkpoint state + rekonstruksi snapshot (pertahankan orphan resolved)
-- [ ] 4.5 Web: kamera (port `PatrolCameraModal`) + `imageStore` IndexedDB
-- [ ] 4.6 Client outbox IndexedDB (offline submit → flush saat online) + id deterministik
+- [x] 4.1 Repo+use-case `savePatrolReport` upsert natural key (`shift_key,ship_id,checkpoint_id`)
+- [x] 4.2 Tombstone anti-resurrection sebagai use-case (blok HANYA re-upsert basi: `completed_at <= deleted_at`) + test (port pelajaran SYSTEM_MAP)
+- [x] 4.3 `finalize_shift` dari `custom_checkpoints` (match-by-name ternormalisasi, fallback id runtime) → cron Phase 8
+- [x] 4.4 Web slice `patrol`: store + checkpoint state + rekonstruksi snapshot (pertahankan orphan resolved)
+- [x] 4.5 Web: kamera (`PatrolCameraModal`, capture=environment) + `imageStore` IndexedDB (idb://)
+- [x] 4.6 Client outbox IndexedDB (offline submit → flush saat online) + id deterministik (natural key)
 
 ### Phase 5 — Incidents & SOS
 - [ ] 5.1 Repo+use-case+route `incidents` (CRUD, JSON payload + kolom query)

@@ -5,6 +5,7 @@ import { RegisterPage } from "../features/auth/ui/RegisterPage";
 import { VerifyEmailPage } from "../features/auth/ui/VerifyEmailPage";
 import { useAuthStore } from "../features/auth/model/authStore";
 import { DashboardPage } from "../features/dashboard/ui/DashboardPage";
+import { PatrolPage } from "../features/patrol/ui/PatrolPage";
 import { ShipListPage } from "../features/ship/ui/ShipListPage";
 import { UserListPage } from "../features/user/ui/UserListPage";
 import { PendingRegistrationsPage } from "../features/user/ui/PendingRegistrationsPage";
@@ -61,6 +62,14 @@ export function AppRouter() {
           element={
             <ProtectedRoute>
               <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/patrol/:shipId"
+          element={
+            <ProtectedRoute>
+              <PatrolPage />
             </ProtectedRoute>
           }
         />
