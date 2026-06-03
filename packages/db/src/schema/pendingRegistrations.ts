@@ -10,6 +10,10 @@ export const pendingRegistrations = sqliteTable("pending_registrations", {
   status: text("status", { enum: ["PENDING", "APPROVED", "REJECTED"] })
     .notNull()
     .default("PENDING"),
+  /** Set when the applicant confirms their email via the verification link. */
+  emailVerifiedAt: integer("email_verified_at"),
+  /** Hash of the one-time email-verification token. */
+  verificationTokenHash: text("verification_token_hash"),
   createdAt: integer("created_at").notNull(),
   updatedAt: integer("updated_at").notNull(),
 });

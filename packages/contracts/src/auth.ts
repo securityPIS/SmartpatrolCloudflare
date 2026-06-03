@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { Email, EpochMs, Id, Role } from "./common";
+import { PendingRegistrationStatus } from "./profile";
 
 export const Password = z.string().min(8).max(128);
 
@@ -57,3 +58,19 @@ export const RefreshRequest = z.object({
   refreshToken: z.string(),
 });
 export type RefreshRequest = z.infer<typeof RefreshRequest>;
+
+export const LogoutRequest = RefreshRequest;
+export type LogoutRequest = z.infer<typeof LogoutRequest>;
+
+/** Registration goes to a pending queue awaiting admin approval (Phase 3). */
+export const RegisterResponse = z.object({
+  status: PendingRegistrationStatus,
+  message: z.string(),
+});
+export type RegisterResponse = z.infer<typeof RegisterResponse>;
+
+export const VerifyEmailRequest = z.object({
+  id: Id,
+  token: z.string().min(1),
+});
+export type VerifyEmailRequest = z.infer<typeof VerifyEmailRequest>;
