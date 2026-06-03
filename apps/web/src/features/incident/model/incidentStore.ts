@@ -1,5 +1,9 @@
 import { create } from "zustand";
-import type { CreateIncidentRequest, Incident, UpdateIncidentRequest } from "@smartpatrol/contracts";
+import type {
+  CreateIncidentRequest,
+  Incident,
+  UpdateIncidentRequest,
+} from "@smartpatrol/contracts";
 import { useAuthStore } from "../../auth/model/authStore";
 import { incidentApi } from "../api/incidentApi";
 

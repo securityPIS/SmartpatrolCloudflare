@@ -9,20 +9,28 @@ import { PatrolPage } from "../features/patrol/ui/PatrolPage";
 import { ShipListPage } from "../features/ship/ui/ShipListPage";
 import { UserListPage } from "../features/user/ui/UserListPage";
 import { PendingRegistrationsPage } from "../features/user/ui/PendingRegistrationsPage";
-import { AdminLayout } from "../shared/ui/AdminLayout";
+import { AppLayout } from "../shared/ui/AppLayout";
 import { IncidentListPage } from "../features/incident/ui/IncidentListPage";
+
+function LayoutLoading() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-[#070b19] text-cyan-500">
+      <span className="animate-pulse text-sm font-bold uppercase tracking-widest">Memuat…</span>
+    </div>
+  );
+}
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const status = useAuthStore((s) => s.status);
   const location = useLocation();
 
   if (status === "unknown") {
-    return <p className="flex min-h-screen items-center justify-center text-slate-500">Loading…</p>;
+    return <LayoutLoading />;
   }
   if (status === "unauthenticated") {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
-  return <>{children}</>;
+  return <AppLayout>{children}</AppLayout>;
 }
 
 function AdminRoute({ children }: { children: ReactNode }) {
@@ -31,7 +39,7 @@ function AdminRoute({ children }: { children: ReactNode }) {
   const location = useLocation();
 
   if (status === "unknown") {
-    return <p className="flex min-h-screen items-center justify-center text-slate-500">Loading…</p>;
+    return <LayoutLoading />;
   }
   if (status === "unauthenticated") {
     return <Navigate to="/login" state={{ from: location }} replace />;
@@ -39,7 +47,7 @@ function AdminRoute({ children }: { children: ReactNode }) {
   if (user && user.role !== "ADMIN") {
     return <Navigate to="/" replace />;
   }
-  return <AdminLayout>{children}</AdminLayout>;
+  return <AppLayout>{children}</AppLayout>;
 }
 
 export function AppRouter() {

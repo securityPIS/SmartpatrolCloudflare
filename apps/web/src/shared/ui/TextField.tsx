@@ -5,13 +5,17 @@ interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   id: string;
 }
 
-export function TextField({ label, id, ...props }: TextFieldProps) {
+export function TextField({ label, id, className, ...props }: TextFieldProps) {
   return (
     <label htmlFor={id} className="block">
-      <span className="mb-1 block text-sm font-medium text-slate-700">{label}</span>
+      <span className="mb-1.5 block pl-1 font-mono text-[10px] uppercase tracking-widest text-cyan-500">
+        {label}
+      </span>
       <input
         id={id}
-        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-200"
+        className={`w-full rounded-xl border border-cyan-800/50 bg-[#0b1229] p-3.5 text-sm text-cyan-50 shadow-sm outline-none transition-all focus:border-cyan-400${
+          className ? ` ${className}` : ""
+        }`}
         {...props}
       />
     </label>

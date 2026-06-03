@@ -1,3 +1,88 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+ * SmartPatrol global theme — dark navy + cyan identity.
+ * Mirrors the look of the original SmartPatrol app (Chakra Petch, radial
+ * cyan glow over a deep navy gradient, glass surfaces, slim cyan scrollbar).
+ */
+@layer base {
+  :root {
+    color: #e2f5ff;
+    background-color: #020617;
+    font-family: "Chakra Petch", "Segoe UI", system-ui, sans-serif;
+    color-scheme: dark;
+  }
+
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    min-height: 100vh;
+    margin: 0;
+    background:
+      radial-gradient(circle at top, rgba(34, 211, 238, 0.2), transparent 32%),
+      linear-gradient(180deg, #020617 0%, #071224 48%, #020617 100%);
+    color: #e2f5ff;
+  }
+
+  #root {
+    min-height: 100vh;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+}
+
+@layer components {
+  .app-shell {
+    background:
+      linear-gradient(180deg, rgba(8, 15, 28, 0.96), rgba(3, 10, 18, 0.98)),
+      radial-gradient(circle at top right, rgba(34, 211, 238, 0.14), transparent 28%);
+  }
+
+  .glass-card {
+    background: rgba(5, 14, 24, 0.78);
+    backdrop-filter: blur(18px);
+  }
+
+  .soft-outline {
+    box-shadow:
+      0 20px 60px rgba(2, 6, 23, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+}
+
+@layer utilities {
+  .content-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: 360px;
+  }
+}
+
+/* Slim cyan scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(34, 211, 238, 0.1);
+  border-radius: 10px;
+  transition: background 0.3s;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 211, 238, 0.3);
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(34, 211, 238, 0.1) transparent;
+}

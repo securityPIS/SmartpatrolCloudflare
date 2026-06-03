@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Bell, Check, X } from "lucide-react";
 import type { PendingRegistration } from "@smartpatrol/contracts";
 import { useUserStore } from "../model/userStore";
 
@@ -14,42 +15,44 @@ function PendingRow({ reg }: { reg: PendingRegistration }) {
     try {
       await fn();
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Action failed");
+      setErr(e instanceof Error ? e.message : "Aksi gagal");
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 p-4">
+    <div className="rounded-2xl border border-cyan-800/50 bg-[#0b1229] p-4">
       <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="font-medium text-slate-800">{reg.fullName}</p>
-          <p className="text-sm text-slate-500">{reg.email}</p>
+        <div className="min-w-0">
+          <p className="font-bold text-cyan-50">{reg.fullName}</p>
+          <p className="text-sm text-cyan-300/75">{reg.email}</p>
           {reg.requestedShipName && (
-            <p className="mt-0.5 text-xs text-slate-400">Requested ship: {reg.requestedShipName}</p>
+            <p className="mt-0.5 text-[10px] uppercase tracking-widest text-cyan-600">
+              Kapal diminta: {reg.requestedShipName}
+            </p>
           )}
-          <p className="mt-0.5 text-xs text-slate-400">
-            Registered: {new Date(reg.createdAt).toLocaleDateString()}
+          <p className="mt-0.5 text-[10px] uppercase tracking-widest text-cyan-600">
+            Terdaftar: {new Date(reg.createdAt).toLocaleDateString()}
           </p>
-          {err && <p className="mt-1 text-xs text-red-600">{err}</p>}
+          {err && <p className="mt-1 text-xs text-rose-300">{err}</p>}
         </div>
         <div className="flex shrink-0 gap-2">
           <button
             type="button"
             disabled={busy}
             onClick={() => act(() => approve(reg.id))}
-            className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-green-700 disabled:opacity-60"
+            className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white transition hover:bg-emerald-500 disabled:opacity-60"
           >
-            Approve
+            <Check className="h-3.5 w-3.5" /> Setujui
           </button>
           <button
             type="button"
             disabled={busy}
             onClick={() => act(() => reject(reg.id))}
-            className="rounded-lg border border-red-200 px-3 py-1.5 text-sm text-red-600 transition hover:bg-red-50 disabled:opacity-60"
+            className="inline-flex items-center gap-1 rounded-lg border border-rose-500/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-rose-300 transition hover:bg-rose-500/10 disabled:opacity-60"
           >
-            Reject
+            <X className="h-3.5 w-3.5" /> Tolak
           </button>
         </div>
       </div>
@@ -65,22 +68,31 @@ export function PendingRegistrationsPage() {
   }, [loadPending]);
 
   return (
-    <main className="mx-auto max-w-2xl p-6">
-      <div className="mb-6">
-        <h1 className="text-xl font-semibold text-slate-900">Pending Registrations</h1>
-        <p className="text-sm text-slate-500">{pending.length} awaiting review</p>
+    <div className="mx-auto max-w-2xl p-4">
+      <div className="mb-6 flex items-center gap-2">
+        <Bell className="h-6 w-6 text-cyan-400" />
+        <div>
+          <h1 className="text-xl font-black text-white">Registrasi Tertunda</h1>
+          <p className="text-[10px] uppercase tracking-widest text-cyan-600">
+            {pending.length} menunggu tinjauan
+          </p>
+        </div>
       </div>
 
-      {status === "loading" && <p className="text-slate-500">Loading…</p>}
-      {status === "error" && <p className="text-sm text-red-600">{error}</p>}
+      {status === "loading" && (
+        <p className="animate-pulse text-sm font-bold uppercase tracking-widest text-cyan-500">
+          Memuat…
+        </p>
+      )}
+      {status === "error" && <p className="text-sm text-rose-300">{error}</p>}
       {status === "ready" && pending.length === 0 && (
-        <p className="text-sm text-slate-400">No pending registrations.</p>
+        <p className="text-sm text-cyan-600">Tidak ada registrasi tertunda.</p>
       )}
       <div className="space-y-3">
         {pending.map((r) => (
           <PendingRow key={r.id} reg={r} />
         ))}
       </div>
-    </main>
+    </div>
   );
 }

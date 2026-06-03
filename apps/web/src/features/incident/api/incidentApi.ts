@@ -1,4 +1,8 @@
-import type { CreateIncidentRequest, Incident, UpdateIncidentRequest } from "@smartpatrol/contracts";
+import type {
+  CreateIncidentRequest,
+  Incident,
+  UpdateIncidentRequest,
+} from "@smartpatrol/contracts";
 import { apiRequest } from "../../../shared/api/client";
 
 export const incidentApi = {

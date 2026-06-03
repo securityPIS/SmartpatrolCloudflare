@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AlertOctagon } from "lucide-react";
 import type { IncidentSeverity } from "@smartpatrol/contracts";
 import { useIncidentStore } from "../model/incidentStore";
 
@@ -6,6 +7,10 @@ interface CreateIncidentModalProps {
   shipId: string;
   onClose: () => void;
 }
+
+const LABEL = "mb-1.5 block pl-1 text-[10px] font-mono uppercase tracking-widest text-cyan-500";
+const FIELD =
+  "w-full rounded-xl border border-cyan-800/50 bg-[#0b1229] p-3.5 text-sm text-cyan-50 outline-none transition-all focus:border-cyan-400";
 
 export function CreateIncidentModal({ shipId, onClose }: CreateIncidentModalProps) {
   const create = useIncidentStore((s) => s.create);
@@ -23,50 +28,51 @@ export function CreateIncidentModal({ shipId, onClose }: CreateIncidentModalProp
       await create({ shipId, title, description: description || undefined, severity, payload: {} });
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create incident");
+      setError(err instanceof Error ? err.message : "Gagal membuat temuan");
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-        <h2 className="mb-4 text-lg font-semibold text-slate-900">Report Incident</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-md scale-up-center rounded-2xl border border-cyan-800/50 bg-[#0b1229] p-6 shadow-2xl">
+        <div className="mb-4 flex items-center gap-2">
+          <AlertOctagon className="h-5 w-5 text-yellow-400" />
+          <h2 className="text-lg font-black text-white">Lapor Temuan</h2>
+        </div>
         <form onSubmit={onSubmit} className="space-y-4">
           <label className="block">
-            <span className="mb-1 block text-sm font-medium text-slate-700">
-              Title <span className="text-red-500">*</span>
+            <span className={LABEL}>
+              Judul <span className="text-rose-400">*</span>
             </span>
             <input
               type="text"
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-200"
-              placeholder="Brief incident title"
+              className={FIELD}
+              placeholder="Judul singkat temuan"
             />
           </label>
 
           <label className="block">
-            <span className="mb-1 block text-sm font-medium text-slate-700">
-              Description <span className="text-slate-400">(optional)</span>
-            </span>
+            <span className={LABEL}>Deskripsi (opsional)</span>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-200"
+              className={FIELD}
               rows={3}
-              placeholder="Additional details…"
+              placeholder="Detail tambahan…"
             />
           </label>
 
           <label className="block">
-            <span className="mb-1 block text-sm font-medium text-slate-700">Severity</span>
+            <span className={LABEL}>Tingkat</span>
             <select
               value={severity}
               onChange={(e) => setSeverity(e.target.value as IncidentSeverity)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-200"
+              className={`${FIELD} appearance-none`}
             >
               <option value="LOW">Low</option>
               <option value="MEDIUM">Medium</option>
@@ -75,22 +81,26 @@ export function CreateIncidentModal({ shipId, onClose }: CreateIncidentModalProp
             </select>
           </label>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && (
+            <p className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs font-medium text-rose-300">
+              {error}
+            </p>
+          )}
 
-          <div className="flex gap-3">
+          <div className="flex gap-3 pt-1">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 rounded-xl border border-slate-200 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
+              className="flex-1 rounded-xl border border-cyan-700 py-3 text-xs font-bold uppercase tracking-widest text-cyan-300 transition hover:bg-cyan-900/40"
             >
-              Cancel
+              Batal
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="flex-1 rounded-xl bg-brand-600 py-2.5 text-sm font-medium text-white transition hover:bg-brand-700 disabled:opacity-60"
+              className="flex-1 rounded-xl bg-cyan-600 py-3 text-xs font-black uppercase tracking-widest text-white shadow-[0_0_20px_rgba(6,182,212,0.3)] transition hover:bg-cyan-500 disabled:opacity-60"
             >
-              {submitting ? "Reporting…" : "Report Incident"}
+              {submitting ? "Mengirim…" : "Kirim Laporan"}
             </button>
           </div>
         </form>

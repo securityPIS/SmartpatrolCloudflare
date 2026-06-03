@@ -22,9 +22,7 @@ export const useSosStore = create<SosState>((set) => ({
   load: async (shipId) => {
     set({ status: "loading", error: null });
     try {
-      const alerts = await useAuthStore
-        .getState()
-        .authedRequest((at) => sosApi.list(at, shipId));
+      const alerts = await useAuthStore.getState().authedRequest((at) => sosApi.list(at, shipId));
       set({ alerts, status: "ready" });
     } catch (err) {
       set({
@@ -35,9 +33,7 @@ export const useSosStore = create<SosState>((set) => ({
   },
 
   raise: async (input) => {
-    const alert = await useAuthStore
-      .getState()
-      .authedRequest((at) => sosApi.raise(at, input));
+    const alert = await useAuthStore.getState().authedRequest((at) => sosApi.raise(at, input));
     set((s) => ({ alerts: [alert, ...s.alerts] }));
     return alert;
   },
@@ -52,9 +48,7 @@ export const useSosStore = create<SosState>((set) => ({
   },
 
   resolve: async (sosId) => {
-    const updated = await useAuthStore
-      .getState()
-      .authedRequest((at) => sosApi.resolve(at, sosId));
+    const updated = await useAuthStore.getState().authedRequest((at) => sosApi.resolve(at, sosId));
     set((s) => ({
       alerts: s.alerts.map((x) => (x.id === sosId ? updated : x)),
     }));

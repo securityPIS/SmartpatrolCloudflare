@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { Check, MapPin, Siren } from "lucide-react";
 import { useAuthStore } from "../../auth/model/authStore";
 import { useSosStore } from "../model/sosStore";
 
@@ -9,11 +10,11 @@ interface SosAlertsBannerProps {
 function timeAgo(epochMs: number): string {
   const diffMs = Date.now() - epochMs;
   const diffMins = Math.floor(diffMs / 60_000);
-  if (diffMins < 1) return "just now";
-  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffMins < 1) return "baru saja";
+  if (diffMins < 60) return `${diffMins}m lalu`;
   const diffHrs = Math.floor(diffMins / 60);
-  if (diffHrs < 24) return `${diffHrs}h ago`;
-  return `${Math.floor(diffHrs / 24)}d ago`;
+  if (diffHrs < 24) return `${diffHrs}j lalu`;
+  return `${Math.floor(diffHrs / 24)}h lalu`;
 }
 
 function truncateId(id: string): string {
@@ -39,18 +40,16 @@ export function SosAlertsBanner({ shipId }: SosAlertsBannerProps) {
     };
   }, [load, shipId]);
 
-  const activeAlerts = alerts.filter(
-    (a) => a.status === "ACTIVE" || a.status === "ACKNOWLEDGED",
-  );
+  const activeAlerts = alerts.filter((a) => a.status === "ACTIVE" || a.status === "ACKNOWLEDGED");
 
   if (activeAlerts.length === 0) return null;
 
   return (
-    <div className="mb-4 rounded-xl border border-red-300 bg-red-50 p-4">
+    <div className="mb-4 animate-sos-flash rounded-2xl border border-red-500/40 p-4">
       <div className="mb-2 flex items-center gap-2">
-        <span className="inline-flex h-2 w-2 animate-pulse rounded-full bg-red-600" />
-        <p className="text-sm font-semibold text-red-700">
-          {activeAlerts.length} active SOS alert{activeAlerts.length !== 1 ? "s" : ""}
+        <Siren className="h-5 w-5 animate-pulse text-red-400" />
+        <p className="text-sm font-black uppercase tracking-widest text-rose-200">
+          {activeAlerts.length} SOS aktif
         </p>
       </div>
 
@@ -58,40 +57,40 @@ export function SosAlertsBanner({ shipId }: SosAlertsBannerProps) {
         {activeAlerts.map((alert) => (
           <div
             key={alert.id}
-            className={`rounded-lg border p-3 ${
+            className={`rounded-xl border p-3 ${
               alert.status === "ACTIVE"
-                ? "border-red-200 bg-white"
-                : "border-amber-200 bg-amber-50"
+                ? "border-rose-500/30 bg-rose-500/10"
+                : "border-yellow-500/30 bg-yellow-500/10"
             }`}
           >
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <span
-                    className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
+                    className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest ${
                       alert.status === "ACTIVE"
-                        ? "bg-red-100 text-red-700"
-                        : "bg-amber-100 text-amber-700"
+                        ? "bg-rose-500/20 text-rose-300"
+                        : "bg-yellow-500/20 text-yellow-400"
                     }`}
                   >
                     {alert.status}
                   </span>
-                  <span className="text-xs text-slate-500">
-                    Raised by {truncateId(alert.raisedBy)}
+                  <span className="text-xs text-cyan-300/80">
+                    Oleh {truncateId(alert.raisedBy)}
                   </span>
-                  <span className="text-xs text-slate-400">{timeAgo(alert.createdAt)}</span>
+                  <span className="text-[10px] uppercase tracking-widest text-cyan-600">
+                    {timeAgo(alert.createdAt)}
+                  </span>
                 </div>
 
-                {alert.message && (
-                  <p className="mt-1 text-sm text-slate-700">{alert.message}</p>
-                )}
+                {alert.message && <p className="mt-1 text-sm text-cyan-100">{alert.message}</p>}
 
                 {(alert.lat !== null || alert.lng !== null) && (
-                  <p className="mt-0.5 text-xs text-slate-500">
-                    Location:{" "}
+                  <p className="mt-0.5 flex items-center gap-1 text-xs text-cyan-400">
+                    <MapPin className="h-3 w-3" />
                     {alert.lat !== null && alert.lng !== null
                       ? `${alert.lat.toFixed(4)}, ${alert.lng.toFixed(4)}`
-                      : "partial"}
+                      : "lokasi sebagian"}
                   </p>
                 )}
               </div>
@@ -101,18 +100,18 @@ export function SosAlertsBanner({ shipId }: SosAlertsBannerProps) {
                   <button
                     type="button"
                     onClick={() => void acknowledge(alert.id)}
-                    className="rounded-lg border border-amber-300 px-2.5 py-1 text-xs font-medium text-amber-700 transition hover:bg-amber-100"
+                    className="rounded-lg border border-yellow-500/40 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-yellow-400 transition hover:bg-yellow-500/10"
                   >
-                    Acknowledge
+                    Tanggapi
                   </button>
                 )}
                 {isAdmin && alert.status !== "RESOLVED" && (
                   <button
                     type="button"
                     onClick={() => void resolve(alert.id)}
-                    className="rounded-lg border border-green-300 px-2.5 py-1 text-xs font-medium text-green-700 transition hover:bg-green-100"
+                    className="inline-flex items-center gap-1 rounded-lg border border-emerald-500/40 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-emerald-400 transition hover:bg-emerald-500/10"
                   >
-                    Resolve
+                    <Check className="h-3 w-3" /> Selesai
                   </button>
                 )}
               </div>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Siren } from "lucide-react";
 import { useSosStore } from "../model/sosStore";
 
 interface SosButtonProps {
@@ -84,8 +85,8 @@ export function SosButton({ shipId }: SosButtonProps) {
 
   if (success) {
     return (
-      <div className="inline-flex items-center gap-2 rounded-xl bg-green-100 px-4 py-2 text-sm font-medium text-green-700">
-        SOS raised
+      <div className="inline-flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-xs font-bold uppercase tracking-widest text-emerald-400">
+        <Siren className="h-4 w-4" /> SOS Terkirim
       </div>
     );
   }
@@ -96,55 +97,65 @@ export function SosButton({ shipId }: SosButtonProps) {
         type="button"
         onClick={handleOpen}
         disabled={busy}
-        className="inline-flex items-center justify-center rounded-xl bg-red-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-red-700 active:scale-95 disabled:opacity-60"
+        title="Tombol Darurat SOS"
+        className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-red-600 px-4 py-2 text-xs font-black uppercase tracking-widest text-white transition hover:bg-red-700 active:scale-95 disabled:opacity-60"
+        style={{ boxShadow: "0 0 15px rgba(220,38,38,0.6), 0 0 30px rgba(220,38,38,0.4)" }}
       >
-        SOS
+        <Siren className="h-4 w-4 animate-pulse" /> SOS
       </button>
 
       {confirming && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
-            <div className="mb-1 flex items-center gap-2">
-              <span className="text-2xl">🚨</span>
-              <h2 className="text-lg font-semibold text-slate-900">Emergency SOS</h2>
-            </div>
-            <p className="mb-4 text-sm text-slate-600">
-              Are you sure you want to raise an emergency alert?
-            </p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+          <div className="relative w-full max-w-sm scale-up-center overflow-hidden rounded-2xl border border-red-500/30 bg-[#0b1229] p-6 shadow-2xl">
+            <div className="absolute inset-x-0 top-0 h-1 animate-pulse bg-red-500" />
+            <div className="flex flex-col items-center space-y-4 text-center">
+              <div className="rounded-full bg-red-500/20 p-4">
+                <Siren className="h-12 w-12 text-red-500" />
+              </div>
+              <h2 className="text-xl font-black uppercase tracking-widest text-white">
+                Konfirmasi SOS
+              </h2>
+              <p className="text-sm leading-relaxed text-cyan-300/80">
+                Peringatan: ini akan mengaktifkan{" "}
+                <strong className="text-rose-300">
+                  alarm sirine di seluruh perangkat terhubung
+                </strong>
+                . Hanya gunakan dalam keadaan darurat sesungguhnya!
+              </p>
 
-            <label className="block mb-4">
-              <span className="mb-1 block text-sm font-medium text-slate-700">
-                Message <span className="text-slate-400">(optional)</span>
-              </span>
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none transition focus:border-red-400 focus:ring-2 focus:ring-red-200"
-                rows={3}
-                placeholder="Describe the emergency…"
+                className="w-full rounded-xl border border-red-500/30 bg-[#070b19] px-3 py-2 text-sm text-cyan-50 outline-none transition focus:border-red-400"
+                rows={2}
+                placeholder="Pesan darurat (opsional)…"
                 disabled={busy}
               />
-            </label>
 
-            {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
+              {error && (
+                <p className="w-full rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs font-medium text-rose-300">
+                  {error}
+                </p>
+              )}
 
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={handleCancel}
-                disabled={busy}
-                className="flex-1 rounded-xl border border-slate-200 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50 disabled:opacity-60"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => void handleConfirm()}
-                disabled={busy}
-                className="flex-1 rounded-xl bg-red-600 py-2.5 text-sm font-bold text-white transition hover:bg-red-700 disabled:opacity-60"
-              >
-                {busy ? "Sending…" : "Raise SOS"}
-              </button>
+              <div className="flex w-full gap-3 pt-1">
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  disabled={busy}
+                  className="flex-1 rounded-xl border border-cyan-700 py-3 text-xs font-bold uppercase tracking-widest text-cyan-300 transition hover:bg-cyan-900/40 disabled:opacity-60"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void handleConfirm()}
+                  disabled={busy}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-red-600 py-3 text-xs font-black uppercase tracking-widest text-white transition hover:bg-red-700 disabled:opacity-60"
+                >
+                  <Siren className="h-4 w-4" /> {busy ? "Mengirim…" : "Kirim SOS"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
