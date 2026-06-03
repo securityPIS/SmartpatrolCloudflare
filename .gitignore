@@ -14,6 +14,9 @@ build/
 !.dev.vars.example
 wrangler.toml.bak
 
+# generated admin seed (contains a password hash)
+apps/api/scripts/seed-admin.sql
+
 # env / secrets
 .env
 .env.*
