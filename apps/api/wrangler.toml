@@ -1,0 +1,43 @@
+name = "smartpatrol-api"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+[observability]
+enabled = true
+
+[vars]
+APP_ENV = "development"
+
+# --- D1 (Phase 0.3 / 1) ---
+# Create with: wrangler d1 create smartpatrol  → paste the id below.
+[[d1_databases]]
+binding = "DB"
+database_name = "smartpatrol"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+migrations_dir = "../../packages/db/migrations"
+
+# --- R2 media bucket (Phase 6) ---
+# Create with: wrangler r2 bucket create smartpatrol-media
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "smartpatrol-media"
+
+# --- KV (sessions cache / misc) ---
+# Create with: wrangler kv namespace create KV  → paste the id below.
+[[kv_namespaces]]
+binding = "KV"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
+
+# --- Durable Objects: realtime ShipChannel (Phase 7) ---
+[[durable_objects.bindings]]
+name = "SHIP_CHANNEL"
+class_name = "ShipChannel"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["ShipChannel"]
+
+# --- Cron triggers (Phase 8) ---
+[triggers]
+crons = ["*/5 * * * *"]
