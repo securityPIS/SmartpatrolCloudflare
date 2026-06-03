@@ -10,8 +10,8 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "generate": "drizzle-kit generate",
-    "migrate:local": "wrangler d1 migrations apply smartpatrol --local",
-    "migrate:remote": "wrangler d1 migrations apply smartpatrol --remote"
+    "migrate:local": "wrangler d1 migrations apply smartpatrol --local --cwd ../../apps/api",
+    "migrate:remote": "wrangler d1 migrations apply smartpatrol --remote --cwd ../../apps/api"
   },
   "dependencies": {
     "@smartpatrol/contracts": "workspace:*",
