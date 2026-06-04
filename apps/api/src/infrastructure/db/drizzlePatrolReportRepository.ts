@@ -1,4 +1,4 @@
-import { and, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, like, sql } from "drizzle-orm";
 import { patrolReports, type Database } from "@smartpatrol/db";
 import type {
   NewPatrolReport,
@@ -59,6 +59,9 @@ export class DrizzlePatrolReportRepository implements PatrolReportRepository {
     if (filter?.shipIds) {
       if (filter.shipIds.length === 0) return [];
       conditions.push(inArray(patrolReports.shipId, filter.shipIds));
+    }
+    if (filter?.shiftDatePrefix) {
+      conditions.push(like(patrolReports.shiftKey, `${filter.shiftDatePrefix}%`));
     }
 
     const rows = await this.db

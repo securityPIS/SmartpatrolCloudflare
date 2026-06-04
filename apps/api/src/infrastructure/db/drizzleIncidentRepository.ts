@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, count, desc, eq, inArray } from "drizzle-orm";
 import { incidents, type Database } from "@smartpatrol/db";
 import type {
   IncidentFilters,
@@ -11,11 +11,7 @@ export class DrizzleIncidentRepository implements IncidentRepository {
   constructor(private readonly db: Database) {}
 
   async findById(id: string): Promise<IncidentRecord | null> {
-    const rows = await this.db
-      .select()
-      .from(incidents)
-      .where(eq(incidents.id, id))
-      .limit(1);
+    const rows = await this.db.select().from(incidents).where(eq(incidents.id, id)).limit(1);
     const row = rows[0];
     if (!row) return null;
     return this.toRecord(row);
@@ -61,6 +57,19 @@ export class DrizzleIncidentRepository implements IncidentRepository {
 
   async delete(id: string): Promise<void> {
     await this.db.delete(incidents).where(eq(incidents.id, id));
+  }
+
+  async countOpen(shipIds?: string[]): Promise<number> {
+    const conditions = [eq(incidents.status, "OPEN")];
+    if (shipIds) {
+      if (shipIds.length === 0) return 0;
+      conditions.push(inArray(incidents.shipId, shipIds));
+    }
+    const rows = await this.db
+      .select({ value: count() })
+      .from(incidents)
+      .where(and(...conditions));
+    return rows[0]?.value ?? 0;
   }
 
   private toRecord(row: typeof incidents.$inferSelect): IncidentRecord {

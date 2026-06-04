@@ -7,3 +7,4 @@ export * from "./patrol";
 export * from "./incident";
 export * from "./sos";
 export * from "./notification";
+export * from "./report";

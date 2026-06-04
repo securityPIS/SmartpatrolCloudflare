@@ -35,6 +35,8 @@ export interface ShiftSummaryRow {
 export interface ShiftSummaryFilter {
   /** Restrict to these ships. Omit for every ship (admin); empty ⇒ no rows. */
   shipIds?: string[];
+  /** Restrict to shifts whose key starts with this `YYYY-MM-DD` date. */
+  shiftDatePrefix?: string;
   /** Max (ship, shift) rows, most recent first. */
   limit?: number;
 }

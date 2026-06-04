@@ -39,6 +39,11 @@ export function canApproveRegistrations(actor: Actor): boolean {
   return isAdmin(actor);
 }
 
+/** The management dashboard / Daily Report is open to ADMIN and PIC. */
+export function canAccessDashboard(actor: Actor): boolean {
+  return actor.role === "ADMIN" || actor.role === "PIC";
+}
+
 /** A pending registration is visible to an admin or to the owner who created it. */
 export function canViewPendingRegistration(actor: Actor, ownerId: string): boolean {
   return isAdmin(actor) || actor.id === ownerId;
@@ -82,6 +87,12 @@ export function assertCanAccessShip(actor: Actor, shipId: string): void {
 export function assertAdmin(actor: Actor): void {
   if (!isAdmin(actor)) {
     throw new ForbiddenError("Administrator role required");
+  }
+}
+
+export function assertCanAccessDashboard(actor: Actor): void {
+  if (!canAccessDashboard(actor)) {
+    throw new ForbiddenError("Dashboard access requires ADMIN or PIC");
   }
 }
 

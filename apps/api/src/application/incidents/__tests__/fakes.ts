@@ -34,4 +34,11 @@ export class InMemoryIncidentRepository implements IncidentRepository {
   async delete(id: string): Promise<void> {
     this.rows.delete(id);
   }
+
+  async countOpen(shipIds?: string[]): Promise<number> {
+    const allow = shipIds ? new Set(shipIds) : null;
+    return Array.from(this.rows.values()).filter(
+      (r) => r.status === "OPEN" && (!allow || allow.has(r.shipId)),
+    ).length;
+  }
 }

@@ -30,4 +30,6 @@ export interface IncidentRepository {
   create(incident: IncidentRecord): Promise<void>;
   update(id: string, patch: IncidentUpdate): Promise<void>;
   delete(id: string): Promise<void>;
+  /** Count OPEN incidents, optionally restricted to a set of ships. */
+  countOpen(shipIds?: string[]): Promise<number>;
 }

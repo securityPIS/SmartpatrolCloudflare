@@ -11,6 +11,7 @@ import {
   makeNotifier,
   type NotificationUseCases,
 } from "../../application/notifications";
+import { createReportUseCases, type ReportUseCases } from "../../application/reports";
 import type { TokenService } from "../../application/ports/TokenService";
 import { JoseTokenService } from "../../infrastructure/crypto/joseTokenService";
 import { ScryptPasswordHasher } from "../../infrastructure/crypto/scryptPasswordHasher";
@@ -42,6 +43,7 @@ export interface Container {
   incidents: IncidentUseCases;
   sos: SosUseCases;
   notifications: NotificationUseCases;
+  reports: ReportUseCases;
 }
 
 export function createContainer(env: Env): Container {
@@ -64,6 +66,9 @@ export function createContainer(env: Env): Container {
   const profileRepo = new DrizzleProfileRepository(db);
   const pendingRepo = new DrizzlePendingRegistrationRepository(db);
   const shipRepo = new DrizzleShipRepository(db);
+  const patrolRepo = new DrizzlePatrolReportRepository(db);
+  const incidentRepo = new DrizzleIncidentRepository(db);
+  const sosRepo = new DrizzleSosRepository(db);
 
   const auth = createAuthUseCases({
     profiles: profileRepo,
@@ -80,7 +85,7 @@ export function createContainer(env: Env): Container {
   const ships = createShipUseCases({ ships: shipRepo, clock: systemClock, ids: uuidGenerator });
   const users = createUserUseCases({ profiles: profileRepo, clock: systemClock });
   const patrol = createPatrolUseCases({
-    patrols: new DrizzlePatrolReportRepository(db),
+    patrols: patrolRepo,
     ships: shipRepo,
     clock: systemClock,
     ids: uuidGenerator,
@@ -106,14 +111,14 @@ export function createContainer(env: Env): Container {
   });
 
   const incidents = createIncidentUseCases({
-    incidents: new DrizzleIncidentRepository(db),
+    incidents: incidentRepo,
     notifier,
     clock: systemClock,
     ids: uuidGenerator,
   });
 
   const sos = createSosUseCases({
-    sos: new DrizzleSosRepository(db),
+    sos: sosRepo,
     notifier,
     clock: systemClock,
     ids: uuidGenerator,
@@ -124,5 +129,24 @@ export function createContainer(env: Env): Container {
     clock: systemClock,
   });
 
-  return { tokens, auth, ships, users, admin, patrol, incidents, sos, notifications };
+  const reports = createReportUseCases({
+    patrols: patrolRepo,
+    sos: sosRepo,
+    incidents: incidentRepo,
+    ships: shipRepo,
+    clock: systemClock,
+  });
+
+  return {
+    tokens,
+    auth,
+    ships,
+    users,
+    admin,
+    patrol,
+    incidents,
+    sos,
+    notifications,
+    reports,
+  };
 }

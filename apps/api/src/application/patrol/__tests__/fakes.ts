@@ -40,6 +40,7 @@ export class InMemoryPatrolReportRepository implements PatrolReportRepository {
     const byShift = new Map<string, ShiftSummaryRow>();
     for (const r of live) {
       if (allowed && !allowed.has(r.shipId)) continue;
+      if (filter?.shiftDatePrefix && !r.shiftKey.startsWith(filter.shiftDatePrefix)) continue;
       const k = `${r.shipId}::${r.shiftKey}`;
       const acc = byShift.get(k) ?? {
         shipId: r.shipId,
