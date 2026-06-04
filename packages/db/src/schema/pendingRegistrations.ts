@@ -7,6 +7,11 @@ export const pendingRegistrations = sqliteTable("pending_registrations", {
   fullName: text("full_name").notNull(),
   passwordHash: text("password_hash").notNull(),
   requestedShipName: text("requested_ship_name"),
+  /** Public onboarding fields, captured for admin review (Phase 3). */
+  instansi: text("instansi"),
+  workerNumber: text("worker_number"),
+  phone: text("phone"),
+  photoUrl: text("photo_url"),
   status: text("status", { enum: ["PENDING", "APPROVED", "REJECTED"] })
     .notNull()
     .default("PENDING"),

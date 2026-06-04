@@ -10,11 +10,24 @@ export const LoginRequest = z.object({
 });
 export type LoginRequest = z.infer<typeof LoginRequest>;
 
+/** A small, downscaled JPEG/PNG/WebP data URL (the onboarding selfie). */
+export const PhotoDataUrl = z
+  .string()
+  .regex(/^data:image\/(png|jpe?g|webp);base64,[A-Za-z0-9+/=]+$/, "Invalid image data URL")
+  .max(400_000, "Photo too large");
+
 export const RegisterRequest = z.object({
   email: Email,
   password: Password,
   fullName: z.string().trim().min(1).max(120),
   shipName: z.string().trim().min(1).max(120).optional(),
+  /** Instansi/affiliation chosen on the public onboarding form. */
+  instansi: z.string().trim().max(60).optional(),
+  /** Employee / worker number. */
+  workerNumber: z.string().trim().max(60).optional(),
+  phone: z.string().trim().max(40).optional(),
+  /** Onboarding selfie, stored for admin review. */
+  photoUrl: PhotoDataUrl.optional(),
 });
 export type RegisterRequest = z.infer<typeof RegisterRequest>;
 

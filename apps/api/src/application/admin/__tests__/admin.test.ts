@@ -38,6 +38,10 @@ async function seedPending(
     fullName: "Applicant User",
     passwordHash: "hashed:password",
     requestedShipName: null,
+    instansi: null,
+    workerNumber: null,
+    phone: null,
+    photoUrl: null,
     status: overrides.status ?? ("PENDING" as const),
     emailVerifiedAt: ("emailVerifiedAt" in overrides ? overrides.emailVerifiedAt : Date.now()) as
       | number

@@ -1,14 +1,19 @@
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
+  AlertOctagon,
   Anchor,
   BarChart3,
   Bell,
+  ChevronRight,
+  FileText,
   Home,
   LogOut,
+  Moon,
   Settings,
   Shield,
   Ship,
+  Sun,
   UserCog,
   Users,
   Wifi,
@@ -16,26 +21,55 @@ import {
 } from "lucide-react";
 import type { Role } from "@smartpatrol/contracts";
 import { useAuthStore } from "../../features/auth/model/authStore";
+import { useThemeStore } from "../../features/settings/model/themeStore";
+import { useShipStore } from "../../features/ship/model/shipStore";
+import { useNotificationStore } from "../../features/notification/model/notificationStore";
+import { NavSosButton } from "../../features/sos/ui/NavSosButton";
 
 interface NavItem {
   to: string;
   label: string;
   icon: ReactNode;
   end?: boolean;
+  /** Active accent colour. The Temuan tab uses amber, everything else cyan. */
+  accent?: "cyan" | "yellow";
+  isNotif?: boolean;
 }
 
+/** Role-aware tab set, mirroring the original SmartPatrol navigation order. */
 function navItems(role: Role | undefined): NavItem[] {
-  const items: NavItem[] = [
-    { to: "/", label: "Beranda", icon: <Home className="h-5 w-5" />, end: true },
-  ];
-  if (role === "ADMIN") {
-    items.push(
-      { to: "/ships", label: "Armada", icon: <Anchor className="h-5 w-5" /> },
-      { to: "/admin/users", label: "User", icon: <Users className="h-5 w-5" /> },
-      { to: "/admin/registrations", label: "Registrasi", icon: <Bell className="h-5 w-5" /> },
-    );
+  const incidents: NavItem = {
+    to: "/incidents",
+    label: "Temuan",
+    icon: <AlertOctagon className="h-5 w-5" />,
+    accent: "yellow",
+  };
+  const history: NavItem = {
+    to: "/history",
+    label: "Laporan",
+    icon: <FileText className="h-5 w-5" />,
+  };
+  const notifications: NavItem = {
+    to: "/notifications",
+    label: "Notif",
+    icon: <Bell className="h-5 w-5" />,
+    isNotif: true,
+  };
+
+  if (role === "ADMIN" || role === "PIC") {
+    return [
+      history,
+      incidents,
+      { to: "/daily-report", label: "Report", icon: <BarChart3 className="h-5 w-5" /> },
+      notifications,
+    ];
   }
-  return items;
+  return [
+    { to: "/", label: "Patroli", icon: <Home className="h-5 w-5" />, end: true },
+    incidents,
+    history,
+    notifications,
+  ];
 }
 
 const ROLE_BADGE: Record<Role, string> = {
@@ -60,7 +94,19 @@ function Logo({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
   );
 }
 
+function NotifBadge({ count, className }: { count: number; className: string }) {
+  if (count <= 0) return null;
+  return (
+    <span
+      className={`flex items-center justify-center rounded-full border border-[#0b1229] bg-rose-500 font-black text-white ${className}`}
+    >
+      {count > 9 ? "9+" : count}
+    </span>
+  );
+}
+
 function SideNav({ role }: { role: Role | undefined }) {
+  const unread = useNotificationStore((s) => s.unreadCount);
   return (
     <aside className="sticky top-0 z-50 hidden h-screen w-[100px] shrink-0 flex-col overflow-y-auto border-r border-cyan-800/50 bg-[#0b1229] py-6 lg:flex">
       <div className="flex flex-col items-center gap-6 px-2">
@@ -76,7 +122,9 @@ function SideNav({ role }: { role: Role | undefined }) {
               className={({ isActive }) =>
                 `group relative flex w-full flex-col items-center justify-center rounded-2xl py-4 transition-all duration-300 ${
                   isActive
-                    ? "bg-cyan-500/10 text-cyan-400"
+                    ? tab.accent === "yellow"
+                      ? "bg-yellow-500/10 text-yellow-400"
+                      : "bg-cyan-500/10 text-cyan-400"
                     : "text-cyan-700 hover:bg-cyan-900/40 hover:text-cyan-500"
                 }`
               }
@@ -84,7 +132,11 @@ function SideNav({ role }: { role: Role | undefined }) {
               {({ isActive }) => (
                 <>
                   {isActive && (
-                    <span className="absolute left-0 h-8 w-1 rounded-r-full bg-cyan-500 shadow-[0_0_10px_currentColor]" />
+                    <span
+                      className={`absolute left-0 h-8 w-1 rounded-r-full shadow-[0_0_10px_currentColor] ${
+                        tab.accent === "yellow" ? "bg-yellow-500" : "bg-cyan-500"
+                      }`}
+                    />
                   )}
                   <span
                     className={`mb-1.5 transition-transform duration-300 group-hover:scale-110 ${
@@ -93,16 +145,30 @@ function SideNav({ role }: { role: Role | undefined }) {
                   >
                     {tab.icon}
                   </span>
+                  {tab.isNotif && (
+                    <NotifBadge
+                      count={unread}
+                      className="absolute right-3 top-3 h-[18px] min-w-[18px] px-1 text-[8px]"
+                    />
+                  )}
                   <span className="px-1 text-center text-[10px] font-bold uppercase tracking-widest">
                     {tab.label}
                   </span>
+                  {!isActive && (
+                    <span className="absolute right-2 opacity-0 transition-opacity group-hover:opacity-100">
+                      <ChevronRight className="h-3 w-3 text-cyan-800" />
+                    </span>
+                  )}
                 </>
               )}
             </NavLink>
           ))}
         </nav>
       </div>
-      <div className="mt-auto px-4 pb-4">
+      <div className="mt-auto space-y-4 px-4 pb-4">
+        <div className="flex justify-center">
+          <NavSosButton className="h-14 w-14 rounded-full ring-4 ring-red-500/20" />
+        </div>
         <div className="flex flex-col items-center gap-1 rounded-xl border border-cyan-900/30 bg-cyan-950/10 p-3">
           <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]" />
           <span className="text-[8px] font-black uppercase tracking-tighter text-cyan-600">
@@ -115,28 +181,52 @@ function SideNav({ role }: { role: Role | undefined }) {
 }
 
 function BottomNav({ role }: { role: Role | undefined }) {
+  const unread = useNotificationStore((s) => s.unreadCount);
+  const tabs = navItems(role);
+  const leftTabs = tabs.slice(0, 2);
+  const rightTabs = tabs.slice(2);
+
+  const renderTab = (tab: NavItem) => (
+    <NavLink
+      key={tab.to}
+      to={tab.to}
+      end={tab.end}
+      className={({ isActive }) =>
+        `relative flex flex-1 flex-col items-center justify-center rounded-xl p-2 transition-colors ${
+          isActive
+            ? tab.accent === "yellow"
+              ? "text-yellow-400"
+              : "text-cyan-400 drop-shadow-[0_0_5px_rgba(34,211,238,0.5)]"
+            : "text-cyan-700 hover:text-cyan-500"
+        }`
+      }
+    >
+      {tab.icon}
+      {tab.isNotif && (
+        <NotifBadge
+          count={unread}
+          className="absolute right-[calc(50%-20px)] top-1.5 h-[16px] min-w-[16px] px-1 text-[8px]"
+        />
+      )}
+      <span className="mt-0.5 line-clamp-1 text-[9px] font-bold uppercase tracking-widest">
+        {tab.label}
+      </span>
+    </NavLink>
+  );
+
   return (
     <nav className="fixed bottom-0 z-40 w-full border-t border-cyan-800/50 bg-[#0b1229] pb-[env(safe-area-inset-bottom)] lg:hidden">
-      <div className="flex items-center justify-around px-2 pb-1 pt-2">
-        {navItems(role).map((tab) => (
-          <NavLink
-            key={tab.to}
-            to={tab.to}
-            end={tab.end}
-            className={({ isActive }) =>
-              `relative flex flex-1 flex-col items-center justify-center rounded-xl p-2 transition-colors ${
-                isActive
-                  ? "text-cyan-400 drop-shadow-[0_0_5px_rgba(34,211,238,0.5)]"
-                  : "text-cyan-700 hover:text-cyan-500"
-              }`
-            }
-          >
-            {tab.icon}
-            <span className="mt-0.5 line-clamp-1 text-[9px] font-bold uppercase tracking-widest">
-              {tab.label}
-            </span>
-          </NavLink>
-        ))}
+      <div className="relative">
+        <div className="pointer-events-none absolute inset-x-0 -top-7 flex justify-center">
+          <div className="pointer-events-auto">
+            <NavSosButton className="h-16 w-16 rounded-full border-4 border-[#070b19] ring-4 ring-red-500/20" />
+          </div>
+        </div>
+        <div className="flex items-center px-2 pb-1 pt-2">
+          <div className="flex flex-1 items-center justify-around">{leftTabs.map(renderTab)}</div>
+          <div className="w-20 shrink-0" aria-hidden />
+          <div className="flex flex-1 items-center justify-around">{rightTabs.map(renderTab)}</div>
+        </div>
       </div>
     </nav>
   );
@@ -146,10 +236,22 @@ function Header() {
   const user = useAuthStore((s) => s.user);
   const authStatus = useAuthStore((s) => s.status);
   const logout = useAuthStore((s) => s.logout);
+  const theme = useThemeStore((s) => s.theme);
+  const toggleTheme = useThemeStore((s) => s.toggleTheme);
+  const ships = useShipStore((s) => s.ships);
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const role = user?.role;
+  const isAdmin = role === "ADMIN";
+  const canAccessDashboard = role === "ADMIN" || role === "PIC";
   const isOffline = authStatus === "offline";
+
+  const shipName = !isAdmin && user ? ships.find((s) => s.id === user.shipIds[0])?.name : undefined;
+
+  function go(path: string) {
+    navigate(path);
+    setOpen(false);
+  }
 
   return (
     <header className="sticky top-0 z-40 flex items-center justify-between border-b border-cyan-800 bg-[#0b1229]/90 px-4 py-3 shadow-[0_4px_15px_rgba(6,182,212,0.1)] backdrop-blur-md">
@@ -168,7 +270,10 @@ function Header() {
               </span>
             )}
           </div>
-          <p className="mt-0.5 text-[10px] text-cyan-500">{user?.fullName ?? user?.email}</p>
+          <p className="mt-0.5 text-[10px] text-cyan-500">
+            {user?.email}
+            {shipName ? ` · ${shipName}` : ""}
+          </p>
         </div>
       </div>
 
@@ -193,31 +298,56 @@ function Header() {
             <>
               <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} aria-hidden />
               <div className="absolute right-0 top-10 z-50 mt-2 w-48 rounded border border-cyan-800 bg-[#0b1229] py-1 shadow-xl">
-                {role === "ADMIN" && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    toggleTheme();
+                    setOpen(false);
+                  }}
+                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-xs font-bold text-cyan-300 hover:bg-cyan-900/50"
+                >
+                  {theme === "dark" ? (
+                    <Sun className="h-4 w-4 text-yellow-400" />
+                  ) : (
+                    <Moon className="h-4 w-4 text-cyan-400" />
+                  )}
+                  {theme === "dark" ? "Light Mode" : "Dark Mode"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => go("/profile")}
+                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-xs font-bold text-cyan-300 hover:bg-cyan-900/50"
+                >
+                  <UserCog className="h-4 w-4" /> Data Saya
+                </button>
+                {canAccessDashboard && (
+                  <button
+                    type="button"
+                    onClick={() => go("/daily-report")}
+                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-xs font-bold text-cyan-300 hover:bg-cyan-900/50"
+                  >
+                    <BarChart3 className="h-4 w-4" /> Daily Report
+                  </button>
+                )}
+                {isAdmin && (
                   <>
                     <button
                       type="button"
-                      onClick={() => {
-                        navigate("/admin/users");
-                        setOpen(false);
-                      }}
+                      onClick={() => go("/admin/users")}
                       className="flex w-full items-center gap-2 px-4 py-2 text-left text-xs font-bold text-cyan-300 hover:bg-cyan-900/50"
                     >
-                      <UserCog className="h-4 w-4" /> Menu User
+                      <Users className="h-4 w-4" /> Menu User
                     </button>
                     <button
                       type="button"
-                      onClick={() => {
-                        navigate("/ships");
-                        setOpen(false);
-                      }}
+                      onClick={() => go("/ships")}
                       className="flex w-full items-center gap-2 px-4 py-2 text-left text-xs font-bold text-cyan-300 hover:bg-cyan-900/50"
                     >
-                      <BarChart3 className="h-4 w-4" /> Menu Armada
+                      <Anchor className="h-4 w-4" /> Menu Armada
                     </button>
-                    <div className="my-1 border-t border-cyan-900/50" />
                   </>
                 )}
+                <div className="my-1 border-t border-cyan-900/50" />
                 <button
                   type="button"
                   onClick={() => {
@@ -240,9 +370,20 @@ function Header() {
 /** Authenticated app chrome: dark navy shell with side + bottom nav. */
 export function AppLayout({ children }: { children: ReactNode }) {
   const role = useAuthStore((s) => s.user?.role);
+  const theme = useThemeStore((s) => s.theme);
+  const loadShips = useShipStore((s) => s.load);
+
+  // Load the user's ships once for the shell (header ship label, SOS target).
+  useEffect(() => {
+    void loadShips();
+  }, [loadShips]);
+
+  const themeClass = theme === "light" ? "pertamina-light" : "";
 
   return (
-    <div className="relative mx-auto flex min-h-screen w-full max-w-[1280px] flex-col bg-[#070b19] text-cyan-50 lg:h-screen lg:flex-row lg:overflow-hidden lg:border-x lg:border-cyan-900/50 lg:shadow-[0_0_60px_rgba(6,182,212,0.15)]">
+    <div
+      className={`relative mx-auto flex min-h-screen w-full max-w-[1280px] flex-col bg-[#070b19] text-cyan-50 lg:h-screen lg:flex-row lg:overflow-hidden lg:border-x lg:border-cyan-900/50 lg:shadow-[0_0_60px_rgba(6,182,212,0.15)] ${themeClass}`}
+    >
       <SideNav role={role} />
       <div className="relative flex h-full flex-1 flex-col overflow-hidden">
         <Header />

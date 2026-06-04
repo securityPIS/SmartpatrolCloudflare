@@ -31,6 +31,10 @@ export const PendingRegistration = z
     email: Email,
     fullName: z.string(),
     requestedShipName: z.string().nullable(),
+    instansi: z.string().nullable(),
+    workerNumber: z.string().nullable(),
+    phone: z.string().nullable(),
+    photoUrl: z.string().nullable(),
     status: PendingRegistrationStatus,
   })
   .merge(Timestamps);

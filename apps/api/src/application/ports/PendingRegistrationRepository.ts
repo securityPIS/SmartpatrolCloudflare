@@ -6,6 +6,10 @@ export interface PendingRegistrationRecord {
   fullName: string;
   passwordHash: string;
   requestedShipName: string | null;
+  instansi: string | null;
+  workerNumber: string | null;
+  phone: string | null;
+  photoUrl: string | null;
   status: PendingRegistrationStatus;
   emailVerifiedAt: number | null;
   verificationTokenHash: string | null;
