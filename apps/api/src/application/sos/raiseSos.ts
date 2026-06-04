@@ -23,6 +23,22 @@ export function makeRaiseSos(deps: SosDeps) {
     };
 
     await deps.sos.create(record);
+
+    // Fan out an SOS notification to admins + shipmates. Best-effort: a
+    // notification failure must never sink the alert itself.
+    if (deps.notifier) {
+      await deps.notifier
+        .notifyShip({
+          shipId: input.shipId,
+          kind: "SOS",
+          title: "SOS Darurat",
+          body: input.message ?? "Sinyal darurat diaktifkan dari kapal.",
+          data: { sosId: record.id, shipId: input.shipId, lat: record.lat, lng: record.lng },
+          excludeUserId: actor.id,
+        })
+        .catch((err) => console.error("notifyShip (SOS) failed", err));
+    }
+
     return toSosAlert(record);
   };
 }

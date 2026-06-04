@@ -393,11 +393,14 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const role = useAuthStore((s) => s.user?.role);
   const theme = useThemeStore((s) => s.theme);
   const loadShips = useShipStore((s) => s.load);
+  const refreshUnread = useNotificationStore((s) => s.refreshUnread);
 
-  // Load the user's ships once for the shell (header ship label, SOS target).
+  // Prime the shell once: the user's ships (header label, SOS target) and the
+  // unread notification count that drives the nav badge.
   useEffect(() => {
     void loadShips();
-  }, [loadShips]);
+    void refreshUnread();
+  }, [loadShips, refreshUnread]);
 
   const themeClass = theme === "light" ? "pertamina-light" : "";
 

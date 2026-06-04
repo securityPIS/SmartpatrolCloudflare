@@ -23,6 +23,22 @@ export function makeCreateIncident(deps: IncidentDeps) {
     };
 
     await deps.incidents.create(record);
+
+    // Best-effort fan-out: a new finding notifies admins + shipmates without
+    // ever failing the report itself.
+    if (deps.notifier) {
+      await deps.notifier
+        .notifyShip({
+          shipId: input.shipId,
+          kind: "INCIDENT",
+          title: `Temuan: ${input.title}`,
+          body: input.description ?? null,
+          data: { incidentId: record.id, shipId: input.shipId, severity: input.severity },
+          excludeUserId: actor.id,
+        })
+        .catch((err) => console.error("notifyShip (incident) failed", err));
+    }
+
     return toIncident(record);
   };
 }

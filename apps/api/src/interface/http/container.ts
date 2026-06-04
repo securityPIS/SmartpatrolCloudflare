@@ -6,6 +6,11 @@ import { createUserUseCases, type UserUseCases } from "../../application/users";
 import { createPatrolUseCases, type PatrolUseCases } from "../../application/patrol";
 import { createIncidentUseCases, type IncidentUseCases } from "../../application/incidents";
 import { createSosUseCases, type SosUseCases } from "../../application/sos";
+import {
+  createNotificationUseCases,
+  makeNotifier,
+  type NotificationUseCases,
+} from "../../application/notifications";
 import type { TokenService } from "../../application/ports/TokenService";
 import { JoseTokenService } from "../../infrastructure/crypto/joseTokenService";
 import { ScryptPasswordHasher } from "../../infrastructure/crypto/scryptPasswordHasher";
@@ -16,6 +21,7 @@ import { DrizzleShipRepository } from "../../infrastructure/db/drizzleShipReposi
 import { DrizzlePatrolReportRepository } from "../../infrastructure/db/drizzlePatrolReportRepository";
 import { DrizzleIncidentRepository } from "../../infrastructure/db/drizzleIncidentRepository";
 import { DrizzleSosRepository } from "../../infrastructure/db/drizzleSosRepository";
+import { DrizzleNotificationRepository } from "../../infrastructure/db/drizzleNotificationRepository";
 import { NoopEmailGateway } from "../../infrastructure/email/noopEmailGateway";
 import { ResendEmailGateway } from "../../infrastructure/email/resendEmailGateway";
 import { systemClock } from "../../infrastructure/system/systemClock";
@@ -35,6 +41,7 @@ export interface Container {
   patrol: PatrolUseCases;
   incidents: IncidentUseCases;
   sos: SosUseCases;
+  notifications: NotificationUseCases;
 }
 
 export function createContainer(env: Env): Container {
@@ -88,17 +95,34 @@ export function createContainer(env: Env): Container {
     config: { appUrl, emailFrom },
   });
 
+  // Notifications: shared repo + a fan-out Notifier injected into the event
+  // sources (SOS, incidents) so raising either alerts admins and shipmates.
+  const notificationRepo = new DrizzleNotificationRepository(db);
+  const notifier = makeNotifier({
+    profiles: profileRepo,
+    notifications: notificationRepo,
+    clock: systemClock,
+    ids: uuidGenerator,
+  });
+
   const incidents = createIncidentUseCases({
     incidents: new DrizzleIncidentRepository(db),
+    notifier,
     clock: systemClock,
     ids: uuidGenerator,
   });
 
   const sos = createSosUseCases({
     sos: new DrizzleSosRepository(db),
+    notifier,
     clock: systemClock,
     ids: uuidGenerator,
   });
 
-  return { tokens, auth, ships, users, admin, patrol, incidents, sos };
+  const notifications = createNotificationUseCases({
+    notifications: notificationRepo,
+    clock: systemClock,
+  });
+
+  return { tokens, auth, ships, users, admin, patrol, incidents, sos, notifications };
 }

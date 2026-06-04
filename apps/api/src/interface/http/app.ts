@@ -14,6 +14,7 @@ import { adminRouter } from "./routes/admin";
 import { patrolRouter } from "./routes/patrol";
 import { incidentsRouter } from "./routes/incidents";
 import { sosRouter } from "./routes/sos";
+import { notificationsRouter } from "./routes/notifications";
 
 /** Factory for the container, overridable in tests. */
 export type ContainerFactory = (env: Env) => Container;
@@ -40,6 +41,7 @@ export function createApp(getContainer: ContainerFactory = createContainer) {
   app.route("/patrol", patrolRouter);
   app.route("/incidents", incidentsRouter);
   app.route("/sos", sosRouter);
+  app.route("/notifications", notificationsRouter);
 
   app.notFound((c) => {
     const error: ApiError = { code: "NOT_FOUND", message: "Route not found" };
