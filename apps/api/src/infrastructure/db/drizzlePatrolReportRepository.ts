@@ -1,10 +1,14 @@
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { patrolReports, type Database } from "@smartpatrol/db";
 import type {
   NewPatrolReport,
   PatrolReportRecord,
   PatrolReportRepository,
+  ShiftSummaryFilter,
+  ShiftSummaryRow,
 } from "../../application/ports/PatrolReportRepository";
+
+const SUMMARY_LIMIT = 60;
 
 export class DrizzlePatrolReportRepository implements PatrolReportRepository {
   constructor(private readonly db: Database) {}
@@ -48,6 +52,40 @@ export class DrizzlePatrolReportRepository implements PatrolReportRepository {
           isNull(patrolReports.deletedAt),
         ),
       );
+  }
+
+  async listShiftSummaries(filter?: ShiftSummaryFilter): Promise<ShiftSummaryRow[]> {
+    const conditions = [isNull(patrolReports.deletedAt)];
+    if (filter?.shipIds) {
+      if (filter.shipIds.length === 0) return [];
+      conditions.push(inArray(patrolReports.shipId, filter.shipIds));
+    }
+
+    const rows = await this.db
+      .select({
+        shipId: patrolReports.shipId,
+        shiftKey: patrolReports.shiftKey,
+        total: sql<number>`count(*)`,
+        done: sql<number>`sum(case when ${patrolReports.status} = 'DONE' then 1 else 0 end)`,
+        skipped: sql<number>`sum(case when ${patrolReports.status} = 'SKIPPED' then 1 else 0 end)`,
+        pending: sql<number>`sum(case when ${patrolReports.status} = 'PENDING' then 1 else 0 end)`,
+        lastActivityAt: sql<number | null>`max(${patrolReports.updatedAt})`,
+      })
+      .from(patrolReports)
+      .where(and(...conditions))
+      .groupBy(patrolReports.shipId, patrolReports.shiftKey)
+      .orderBy(sql`max(${patrolReports.updatedAt}) desc`)
+      .limit(filter?.limit ?? SUMMARY_LIMIT);
+
+    return rows.map((r) => ({
+      shipId: r.shipId,
+      shiftKey: r.shiftKey,
+      total: Number(r.total),
+      done: Number(r.done),
+      skipped: Number(r.skipped),
+      pending: Number(r.pending),
+      lastActivityAt: r.lastActivityAt == null ? null : Number(r.lastActivityAt),
+    }));
   }
 
   async upsert(report: NewPatrolReport): Promise<void> {

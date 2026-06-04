@@ -21,6 +21,24 @@ export interface PatrolReportRecord {
 
 export type NewPatrolReport = PatrolReportRecord;
 
+/** Aggregated checkpoint tallies for one (ship, shift). */
+export interface ShiftSummaryRow {
+  shipId: string;
+  shiftKey: string;
+  total: number;
+  done: number;
+  skipped: number;
+  pending: number;
+  lastActivityAt: number | null;
+}
+
+export interface ShiftSummaryFilter {
+  /** Restrict to these ships. Omit for every ship (admin); empty ⇒ no rows. */
+  shipIds?: string[];
+  /** Max (ship, shift) rows, most recent first. */
+  limit?: number;
+}
+
 export interface PatrolReportRepository {
   /** Lookup by the natural key (shiftKey, shipId, checkpointId), including tombstoned rows. */
   findByNaturalKey(
@@ -31,6 +49,8 @@ export interface PatrolReportRepository {
   findById(id: string): Promise<PatrolReportRecord | null>;
   /** All live (non-tombstoned) reports for a ship's shift. */
   listByShipAndShift(shipId: string, shiftKey: string): Promise<PatrolReportRecord[]>;
+  /** Per-(ship, shift) checkpoint tallies, most recent first (Laporan/History). */
+  listShiftSummaries(filter?: ShiftSummaryFilter): Promise<ShiftSummaryRow[]>;
   /** Insert-or-update on the natural key. */
   upsert(report: NewPatrolReport): Promise<void>;
   /** Set the tombstone (soft delete). */

@@ -49,3 +49,19 @@ export const SavePatrolReportRequest = z.object({
   completedAt: EpochMs.optional(),
 });
 export type SavePatrolReportRequest = z.infer<typeof SavePatrolReportRequest>;
+
+/**
+ * Per-shift roll-up for the Laporan/History screen: one row per
+ * (ship, shift) with checkpoint-status tallies. Built by aggregating
+ * `patrol_reports`; admins see every ship, others only their own.
+ */
+export const ShiftSummary = z.object({
+  shipId: Id,
+  shiftKey: z.string().min(1),
+  total: z.number().int().nonnegative(),
+  done: z.number().int().nonnegative(),
+  skipped: z.number().int().nonnegative(),
+  pending: z.number().int().nonnegative(),
+  lastActivityAt: EpochMs.nullable(),
+});
+export type ShiftSummary = z.infer<typeof ShiftSummary>;

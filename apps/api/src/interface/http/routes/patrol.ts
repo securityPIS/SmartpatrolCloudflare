@@ -6,6 +6,18 @@ import { getActor } from "../middleware/authorize";
 
 export const patrolRouter = new Hono<HonoEnv>();
 
+/**
+ * Per-shift history for the Laporan screen: GET /patrol/history[?shipId=...].
+ * Registered before the `:shipId/:shiftKey` matcher so "history" is not
+ * captured as a ship id.
+ */
+patrolRouter.get("/history", requireAuth, async (c) => {
+  const actor = getActor(c);
+  const shipId = c.req.query("shipId");
+  const data = await c.var.resolve().patrol.history(actor, shipId);
+  return c.json({ ok: true, data });
+});
+
 /** List live reports for a ship's shift: GET /patrol/:shipId/:shiftKey */
 patrolRouter.get("/:shipId/:shiftKey", requireAuth, async (c) => {
   const actor = getActor(c);

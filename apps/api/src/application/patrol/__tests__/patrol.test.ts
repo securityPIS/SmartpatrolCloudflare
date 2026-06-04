@@ -8,6 +8,7 @@ import { createPatrolUseCases } from "../index";
 import { InMemoryPatrolReportRepository } from "./fakes";
 
 const SHIP_ID = "11111111-1111-4111-8111-111111111111";
+const SHIP_ID_2 = "55555555-5555-4555-8555-555555555555";
 const CP_ID = "22222222-2222-4222-8222-222222222222";
 const CP_ID_2 = "33333333-3333-4333-8333-333333333333";
 
@@ -222,6 +223,77 @@ describe("patrol use-cases", () => {
 
     it("forbids actors without ship access", async () => {
       await expect(uc.finalizeShift(STRANGER, SHIP_ID, "x")).rejects.toThrow(ForbiddenError);
+    });
+  });
+
+  describe("listShiftHistory — per-shift roll-up", () => {
+    it("aggregates a shift's checkpoint tallies for the ship", async () => {
+      const deps = buildDeps();
+      const uc = createPatrolUseCases(deps);
+      await uc.save(
+        PETUGAS,
+        baseInput({ checkpointId: CP_ID, status: "DONE", completedAt: 1_000 }),
+      );
+      await uc.save(
+        PETUGAS,
+        baseInput({ checkpointId: CP_ID_2, checkpointName: "Deck", status: "SKIPPED" }),
+      );
+      const hist = await uc.history(PETUGAS);
+      expect(hist.length).toBe(1);
+      expect(hist[0]).toMatchObject({
+        shipId: SHIP_ID,
+        shiftKey: "2026-06-03-DAY",
+        total: 2,
+        done: 1,
+        skipped: 1,
+        pending: 0,
+      });
+    });
+
+    it("scopes a petugas to their own ships", async () => {
+      const deps = buildDeps();
+      const uc = createPatrolUseCases(deps);
+      await uc.save(
+        ADMIN,
+        baseInput({ shipId: SHIP_ID_2, checkpointId: CP_ID, completedAt: 1_000 }),
+      );
+      await uc.save(
+        PETUGAS,
+        baseInput({ shipId: SHIP_ID, checkpointId: CP_ID, completedAt: 1_000 }),
+      );
+      const hist = await uc.history(PETUGAS);
+      expect(hist.length).toBe(1);
+      expect(hist[0].shipId).toBe(SHIP_ID);
+    });
+
+    it("spans every ship for an admin", async () => {
+      const deps = buildDeps();
+      const uc = createPatrolUseCases(deps);
+      await uc.save(ADMIN, baseInput({ shipId: SHIP_ID, completedAt: 1_000 }));
+      await uc.save(ADMIN, baseInput({ shipId: SHIP_ID_2, completedAt: 1_000 }));
+      const hist = await uc.history(ADMIN);
+      const shipIds = hist.map((s) => s.shipId);
+      expect(shipIds).toContain(SHIP_ID);
+      expect(shipIds).toContain(SHIP_ID_2);
+    });
+
+    it("forbids a non-member when an explicit shipId is requested", async () => {
+      const uc = createPatrolUseCases(buildDeps());
+      await expect(uc.history(STRANGER, SHIP_ID)).rejects.toThrow(ForbiddenError);
+    });
+
+    it("excludes tombstoned reports from the tally", async () => {
+      const deps = buildDeps();
+      const uc = createPatrolUseCases(deps);
+      await uc.save(PETUGAS, baseInput({ checkpointId: CP_ID, completedAt: 1_000 }));
+      await uc.save(
+        PETUGAS,
+        baseInput({ checkpointId: CP_ID_2, checkpointName: "Deck", completedAt: 1_000 }),
+      );
+      const [first] = await uc.list(PETUGAS, SHIP_ID, "2026-06-03-DAY");
+      await uc.delete(PETUGAS, first.id);
+      const hist = await uc.history(PETUGAS);
+      expect(hist[0].total).toBe(1);
     });
   });
 });
