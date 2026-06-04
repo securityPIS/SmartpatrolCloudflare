@@ -1,5 +1,5 @@
 import { type ReactNode, useEffect, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import {
   AlertOctagon,
   Anchor,
@@ -255,7 +255,7 @@ function Header() {
 
   return (
     <header className="sticky top-0 z-40 flex items-center justify-between border-b border-cyan-800 bg-[#0b1229]/90 px-4 py-3 shadow-[0_4px_15px_rgba(6,182,212,0.1)] backdrop-blur-md">
-      <div className="flex items-center gap-3">
+      <Link to="/" className="flex items-center gap-3" aria-label="Beranda">
         <div className="lg:hidden">
           <Logo size="sm" />
         </div>
@@ -275,7 +275,7 @@ function Header() {
             {shipName ? ` · ${shipName}` : ""}
           </p>
         </div>
-      </div>
+      </Link>
 
       <div className="flex items-center gap-3">
         <span className="flex items-center gap-1 text-[10px] font-bold">
