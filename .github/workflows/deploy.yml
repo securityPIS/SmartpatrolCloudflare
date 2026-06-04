@@ -1,0 +1,84 @@
+name: Deploy
+
+# Deploys on every push to the production branch. The web bundle goes to
+# Cloudflare Pages and the API to Cloudflare Workers. The two jobs are
+# independent, so a failure in one does not block the other.
+#
+# Required repository configuration (Settings → Secrets and variables → Actions):
+#   Secrets:
+#     CLOUDFLARE_API_TOKEN   — token with "Cloudflare Pages: Edit" AND
+#                              "Workers Scripts: Edit" (+ Account: Read).
+#     CLOUDFLARE_ACCOUNT_ID  — your Cloudflare account id.
+#   Variables:
+#     VITE_API_URL           — production Worker API base URL, e.g.
+#                              https://smartpatrol-api.<account>.workers.dev
+#                              (copy the value from the Pages project's current
+#                              build environment variables).
+#
+# Also set the Pages project's Production branch to this branch
+# (claude/amazing-maxwell-CM9S4) so the deploy lands on smartpatrol.pages.dev
+# and not a preview URL. Change PAGES_PROJECT below if your project is not
+# named "smartpatrol".
+
+on:
+  push:
+    branches: ["claude/amazing-maxwell-CM9S4"]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PAGES_PROJECT: smartpatrol
+
+jobs:
+  pages:
+    name: Web → Cloudflare Pages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Build web
+        run: pnpm --filter @smartpatrol/web build
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: >-
+            pages deploy apps/web/dist
+            --project-name=${{ env.PAGES_PROJECT }}
+            --branch=${{ github.ref_name }}
+
+  worker:
+    name: API → Cloudflare Workers
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Deploy Worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: apps/api
+          command: deploy
