@@ -107,6 +107,7 @@ function NotifBadge({ count, className }: { count: number; className: string }) 
 
 function SideNav({ role }: { role: Role | undefined }) {
   const unread = useNotificationStore((s) => s.unreadCount);
+  const shipId = useAuthStore((s) => s.user?.shipIds[0]);
   return (
     <aside className="sticky top-0 z-50 hidden h-screen w-[100px] shrink-0 flex-col overflow-y-auto border-r border-cyan-800/50 bg-[#0b1229] py-6 lg:flex">
       <div className="flex flex-col items-center gap-6 px-2">
@@ -166,9 +167,14 @@ function SideNav({ role }: { role: Role | undefined }) {
         </nav>
       </div>
       <div className="mt-auto space-y-4 px-4 pb-4">
-        <div className="flex justify-center">
-          <NavSosButton className="h-14 w-14 rounded-full ring-4 ring-red-500/20" />
-        </div>
+        {shipId && (
+          <div className="flex justify-center">
+            <NavSosButton
+              shipId={shipId}
+              className="h-14 w-14 rounded-full ring-4 ring-red-500/20"
+            />
+          </div>
+        )}
         <div className="flex flex-col items-center gap-1 rounded-xl border border-cyan-900/30 bg-cyan-950/10 p-3">
           <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]" />
           <span className="text-[8px] font-black uppercase tracking-tighter text-cyan-600">
@@ -182,9 +188,8 @@ function SideNav({ role }: { role: Role | undefined }) {
 
 function BottomNav({ role }: { role: Role | undefined }) {
   const unread = useNotificationStore((s) => s.unreadCount);
+  const shipId = useAuthStore((s) => s.user?.shipIds[0]);
   const tabs = navItems(role);
-  const leftTabs = tabs.slice(0, 2);
-  const rightTabs = tabs.slice(2);
 
   const renderTab = (tab: NavItem) => (
     <NavLink
@@ -214,12 +219,28 @@ function BottomNav({ role }: { role: Role | undefined }) {
     </NavLink>
   );
 
+  // Field officers (with a ship) get the floating centred SOS button and a
+  // reserved gap between the tab groups; admins/PIC without a ship get an
+  // evenly spaced single row instead of a dead, greyed-out button.
+  if (!shipId) {
+    return (
+      <nav className="fixed bottom-0 z-40 w-full border-t border-cyan-800/50 bg-[#0b1229] pb-[env(safe-area-inset-bottom)] lg:hidden">
+        <div className="flex items-center justify-around px-2 pb-1 pt-2">{tabs.map(renderTab)}</div>
+      </nav>
+    );
+  }
+
+  const leftTabs = tabs.slice(0, 2);
+  const rightTabs = tabs.slice(2);
   return (
     <nav className="fixed bottom-0 z-40 w-full border-t border-cyan-800/50 bg-[#0b1229] pb-[env(safe-area-inset-bottom)] lg:hidden">
       <div className="relative">
         <div className="pointer-events-none absolute inset-x-0 -top-7 flex justify-center">
           <div className="pointer-events-auto">
-            <NavSosButton className="h-16 w-16 rounded-full border-4 border-[#070b19] ring-4 ring-red-500/20" />
+            <NavSosButton
+              shipId={shipId}
+              className="h-16 w-16 rounded-full border-4 border-[#070b19] ring-4 ring-red-500/20"
+            />
           </div>
         </div>
         <div className="flex items-center px-2 pb-1 pt-2">
